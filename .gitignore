@@ -1,3 +1,4 @@
 *.sw?
 target.json
 parameters.json
+.ropeproject

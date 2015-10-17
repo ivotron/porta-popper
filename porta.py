@@ -11,6 +11,7 @@ execfile(t, dict(__file__=t))
 import argparse
 import json
 import subprocess
+
 import opentuner
 from opentuner import ConfigurationManipulator
 from opentuner import IntegerParameter
@@ -18,14 +19,14 @@ from opentuner import MeasurementInterface
 from opentuner import Result
 
 parser = argparse.ArgumentParser(parents=opentuner.argparsers())
-parser.add_argument('action', default='base',
+parser.add_argument('--action', default='base',
                     choices=('base', 'tune'),
                     help='Whether to tune or generate target results')
-parser.add_argument('--categories', default='cpu mem',
+parser.add_argument('--categories', default='cpu mem', nargs='+',
                     help=('Type of benchmarks to consider (cpu, mem, io, net)'))
 parser.add_argument('--target-file', default='target.json',
                     help=('JSON file containing target performance results'))
-parser.add_argument('--benchmarks', default='stream-copy crafty',
+parser.add_argument('--benchmarks', default='stream-copy crafty', nargs='+',
                     help='benchmarks to execute')
 # internal arguments
 parser.add_argument('--category', help=argparse.SUPPRESS)
@@ -64,7 +65,7 @@ class PortaTuner(MeasurementInterface):
                       ' --rm'
                       ' ivotron/microbench ').format(
                           cfg['mem-bw-limit'],
-                          self.args.benchmarks,
+                          ' '.join(self.args.benchmarks),
                           cfg['cpu-quota'])
 
         result = self.call_program(docker_cmd)
@@ -87,14 +88,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.action == 'base':
-        print(
-            subprocess.check_output(
+        print(subprocess.check_output(
                 ('docker run --rm --cpuset-cpus=0 -e BENCHMARKS="{}"'
-                 '  ivotron/microbench').format(args.benchmarks),
-                stderr=subprocess.STDOUT,
-                shell=True
-            )
-        )
+                 '  ivotron/microbench').format(' '.join(args.benchmarks)),
+                stderr=subprocess.PIPE, shell=True))
         exit()
 
     # read json

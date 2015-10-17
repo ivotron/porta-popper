@@ -2,17 +2,15 @@
 #
 # helper script to execute porta
 
-# get action
-for action; do true; done
-
-case $action in
+case $1 in
   "base")
     docker run \
       --rm \
       -v `which docker`:/usr/bin/docker \
+      -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
       --net=host \
       -e DOCKER_HOST=$DOCKER_HOST \
-         ivotron/porta $@ > target.json
+         ivotron/porta --action $@ > target.json
     ;;
   "tune")
     docker run \
@@ -22,11 +20,12 @@ case $action in
       -v /usr/src:/usr/src \
       -v /lib/modules:/lib/modules \
       -v `which docker`:/usr/bin/docker \
+      -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
       --net=host \
       -e DOCKER_HOST=$DOCKER_HOST \
-         ivotron/porta $@ > parameters.json
+         ivotron/porta --action $@ > parameters.json
     ;;
   *)
-    echo "Unknown action '$action'"
+    echo "Unknown action '$1'"
     ;;
 esac
