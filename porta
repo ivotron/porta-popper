@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# helper script to execute porta
+
+# get action
+for action; do true; done
+
+case $action in
+  "base")
+    docker run \
+      --rm \
+      -v `which docker`:/usr/bin/docker \
+      --net=host \
+      -e DOCKER_HOST=$DOCKER_HOST \
+         ivotron/porta $@ > target.json
+    ;;
+  "tune")
+    docker run \
+      --rm \
+      --privileged \
+      -v /sys/kernel/debug:/sys/kernel/debug \
+      -v /usr/src:/usr/src \
+      -v /lib/modules:/lib/modules \
+      -v `which docker`:/usr/bin/docker \
+      --net=host \
+      -e DOCKER_HOST=$DOCKER_HOST \
+         ivotron/porta $@ > parameters.json
+    ;;
+  *)
+    echo "Unknown action '$action'"
+    ;;
+esac
