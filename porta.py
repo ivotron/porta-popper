@@ -29,7 +29,7 @@ parser.add_argument('--target-file', default='target.json',
                     help=('JSON file containing target performance results'))
 parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
-parser.add_argument('--benchmarks', default=['stream-copy', 'crafty'],
+parser.add_argument('--benchmarks', default=['stream-copy', 'stream-add'],
                     nargs='+', help='benchmarks to execute')
 # internal arguments
 parser.add_argument('--category', help=argparse.SUPPRESS)
@@ -66,12 +66,15 @@ class PortaTuner(MeasurementInterface):
         benchs = self.get_benchmarks_for_category(self.args.benchmarks, target,
                                                   self.args.category)
         if not benchs:
-            raise Exception("Need to execute one benchmark at least")
+            print("No benchmarks for " + self.args.category)
 
         docker_cmd = self.get_cmd_for_class(self.args.category, benchs, cfg)
 
         result = self.call_program(docker_cmd)
-        assert result['returncode'] == 0
+        if result['returncode'] != 0:
+            raise Exception(
+                'Non-zero code:\n {} \n stdout\n {} \n stderr\n {}'.format(
+                    docker_cmd, str(result['stdout']), str(result['stderr'])))
 
         current = json.loads(result['stdout'])
 
@@ -104,7 +107,7 @@ class PortaTuner(MeasurementInterface):
                     ' --cpu-quota={}'
                     ' -e BENCHMARKS="{}"'
                     ' --rm'
-                    ' ivotron/microbench ').format(
+                    ' ivotron/microbench').format(
                         cfg['cpu-quota'],
                         ' '.join(benchmarks))
         elif category == 'memory':
@@ -112,7 +115,7 @@ class PortaTuner(MeasurementInterface):
                     ' --cpuset-cpus=0'
                     ' -e BENCHMARKS="{}"'
                     ' --rm'
-                    ' ivotron/microbench ').format(
+                    ' ivotron/microbench').format(
                         cfg['mem-bw-limit'],
                         ' '.join(benchmarks))
 

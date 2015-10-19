@@ -50,7 +50,7 @@ if [ -z "$MEMGUARD_PATH" ] ; then
   MEMGUARD_PATH="/memguard"
 fi
 cd $MEMGUARD_PATH
-make
+make &> /dev/null
 if [ $? -ne 0 ] ; then
   exit 1
 fi
@@ -62,19 +62,11 @@ fi
 # set bandwidth limit for core 0
 echo mb $1 > /sys/kernel/debug/memguard/limit
 
-# skip the first argument
-args=""
-for i in "${@:2}"; do
-  args+=$i
-done
-
 # execute docker
-docker run $args
+docker run "${@:2}"
 if [ $? -ne 0 ] ; then
   exit 1
 fi
 
 # unload memguard (if previously loaded)
 rmmod memguard
-
-exit 0
