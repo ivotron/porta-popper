@@ -11,6 +11,7 @@ execfile(t, dict(__file__=t))
 import argparse
 import json
 import subprocess
+import logging
 
 import opentuner
 from opentuner import ConfigurationManipulator
@@ -18,8 +19,10 @@ from opentuner import IntegerParameter
 from opentuner import MeasurementInterface
 from opentuner import Result
 
+log = logging.getLogger(__name__)
+
 parser = argparse.ArgumentParser(parents=opentuner.argparsers())
-parser.add_argument('--action', default='base',
+parser.add_argument('--action', default='none',
                     choices=('base', 'tune'),
                     help='Whether to tune or generate target results')
 parser.add_argument('--categories', default=['processor', 'memory'], nargs='+',
@@ -31,6 +34,8 @@ parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
 parser.add_argument('--benchmarks', default=['stream-copy', 'stream-add'],
                     nargs='+', help='benchmarks to execute')
+parser.add_argument('--show-bench-results', action='store_true',
+                    help=('Show result of each benchmark (for every test)'))
 # internal arguments
 parser.add_argument('--category', help=argparse.SUPPRESS)
 parser.add_argument('--target', type=json.loads, help=argparse.SUPPRESS)
@@ -66,31 +71,37 @@ class PortaTuner(MeasurementInterface):
         benchs = self.get_benchmarks_for_category(self.args.benchmarks, target,
                                                   self.args.category)
         if not benchs:
-            print("No benchmarks for " + self.args.category)
+            raise Exception("No benchmarks for " + self.args.category)
 
         docker_cmd = self.get_cmd_for_class(self.args.category, benchs, cfg)
 
         result = self.call_program(docker_cmd)
         if result['returncode'] != 0:
             raise Exception(
-                'Non-zero code:\n {} \n stdout\n {} \n stderr\n {}'.format(
+                'Non-zero exit code:\n{}\nstdout:\n{}\nstderr:\n{}'.format(
                     docker_cmd, str(result['stdout']), str(result['stderr'])))
 
         current = json.loads(result['stdout'])
 
         diff_count = 0
+        diff_sum = 0.0
         for bench in current:
+            if self.args.show_bench_results:
+                log.info(bench + ": " + current[bench]['result'])
             current_result = float(current[bench]['result'])
             target_result = float(target[bench]['result'])
-            diff_sum = abs(current_result - target_result)
+            diff_sum += abs(current_result - target_result)
             diff_count += 1
-        diff_mean = float(diff_sum) / diff_count
+        diff_mean = diff_sum / diff_count
         diff_mean += 1  # avoid division by zero
 
         # TODO: multiply accuracy by variance (or stddev) to factor in the
         # variability in the differences between distinct results
 
-        return Result(time=(diff_mean * -1))
+        return Result(accuracy=(100/diff_mean), time=0.0)
+
+    def objective(self):
+        return opentuner.search.objective.MaximizeAccuracy()
 
     def get_benchmarks_for_category(self, benchmarks, target, category):
         benchs = []
@@ -123,13 +134,14 @@ class PortaTuner(MeasurementInterface):
         '''
         called at the end with best resultsdb.models.Configuration
         '''
-        cfg = configuration.data
-        for parameter in cfg:
-            self.args.outjson += '\n"' + parameter + '":'
-            self.args.outjson += str(cfg[parameter]) + ','
+        self.args.outjson.update(configuration.data)
 
 if __name__ == '__main__':
     args = parser.parse_args()
+
+    if args.action == 'none':
+        raise Exception("Need one action provided with --action")
+        exit()
 
     if args.action == 'base':
         print(subprocess.check_output(
@@ -144,18 +156,14 @@ if __name__ == '__main__':
     with open(args.target_file) as f:
         args.target = json.load(f)
 
-    # initialize output JSON string
-    args.outjson = "{"
+    # initialize output dict
+    args.outjson = {}
 
     # invoke opentuner for each category
     for category in args.categories:
         args.category = category
         PortaTuner.main(args)
 
-    # delete last comma
-    args.outjson = args.outjson[:-1]
-    args.outjson += '\n}'
-
     # write output file
     with open(args.output_file, 'a') as f:
-        f.write(args.outjson)
+        json.dump(args.outjson, f)
