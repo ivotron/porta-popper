@@ -32,7 +32,7 @@ parser.add_argument('--target-file', default='target.json',
                     help=('JSON file containing target performance results'))
 parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
-parser.add_argument('--benchmarks', default=['stream-copy', 'stream-add'],
+parser.add_argument('--benchmarks', default=['stream-copy', 'crafty'],
                     nargs='+', help='benchmarks to execute')
 parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
