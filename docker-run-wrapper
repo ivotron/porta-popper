@@ -58,12 +58,9 @@ insmod $MEMGUARD_PATH/memguard.ko
 if [ $? -ne 0 ] ; then
   exit 1
 fi
-# get maxbw
-$maxbw=`cat /sys/kernel/debug/memguard/control | grep maxbw | sed -e 's/maxbw: \(.*\) (MB\/s)/\1/'`
 
 # set bandwidth limit for core 0
 echo mb $1 > /sys/kernel/debug/memguard/limit
-echo maxbw 2100 > /sys/kernel/debug/memguard/control
 
 # execute docker
 docker run "${@:2}"
