@@ -8,11 +8,6 @@ if [ ! -d "/usr/src/linux-headers-`uname -r`" ] ; then
   exit 1
 fi
 type docker >/dev/null 2>&1 || { echo >&2 "Can't find docker command."; exit 1; }
-version=`docker version | sed -n -e 's/Server version: //p'`
-if [ `dpkg --compare-versions $version ge 1.7` ] ; then
-  echo "ERROR: expecting version 1.7+ of docker"
-  exit 1
-fi
 
 case $1 in
   "base")

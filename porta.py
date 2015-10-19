@@ -98,7 +98,7 @@ class PortaTuner(MeasurementInterface):
         # TODO: multiply accuracy by variance (or stddev) to factor in the
         # variability in the differences between distinct results
 
-        return Result(accuracy=(100/diff_mean), time=0.0)
+        return Result(accuracy=(1000/diff_mean), time=0.0)
 
     def objective(self):
         return opentuner.search.objective.MaximizeAccuracy()
