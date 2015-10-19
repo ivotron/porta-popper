@@ -2,6 +2,18 @@
 #
 # helper script to execute porta
 
+# check prerequisites
+if [ ! -d "/usr/src/linux-headers-`uname -r`" ] ; then
+  echo "ERROR: headers for `uname -r` not found"
+  exit 1
+fi
+type docker >/dev/null 2>&1 || { echo >&2 "Can't find docker command."; exit 1; }
+version=`docker version | sed -n -e 's/Server version: //p'`
+if [ `dpkg --compare-versions $version ge 1.7` ] ; then
+  echo "ERROR: expecting version 1.7+ of docker"
+  exit 1
+fi
+
 case $1 in
   "base")
     docker run \
@@ -13,7 +25,9 @@ case $1 in
          ivotron/porta --action $@ > target.json
     ;;
   "tune")
+    echo "" > parameters.json
     docker run \
+      --workdir=/ \
       --rm \
       --privileged \
       -v /sys/kernel/debug:/sys/kernel/debug \
@@ -21,9 +35,11 @@ case $1 in
       -v /lib/modules:/lib/modules \
       -v `which docker`:/usr/bin/docker \
       -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
+      -v `pwd`/target.json:/target.json \
+      -v `pwd`/parameters.json:/parameters.json \
       --net=host \
       -e DOCKER_HOST=$DOCKER_HOST \
-         ivotron/porta --action $@ > parameters.json
+         ivotron/porta --action $@
     ;;
   *)
     echo "Unknown action '$1'"
