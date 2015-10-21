@@ -55,7 +55,7 @@ class PortaTuner(MeasurementInterface):
                 IntegerParameter('cpu-quota', 5000, 100000))
         elif args.category == 'memory':
             manipulator.add_parameter(
-                IntegerParameter('mem-bw-limit', 100, 2000))
+                IntegerParameter('mem-bw-limit', 10, 350))
         else:
             raise Exception('Unknown benchmark class ' + args.category)
 
@@ -87,7 +87,8 @@ class PortaTuner(MeasurementInterface):
         diff_sum = 0.0
         for bench in current:
             if self.args.show_bench_results:
-                log.info(bench + ": " + current[bench]['result'])
+                log.info(
+                    bench + ": " + current[bench]['result'] + " " + str(cfg))
             current_result = float(current[bench]['result'])
             target_result = float(target[bench]['result'])
             diff_sum += abs(current_result - target_result)
