@@ -52,21 +52,20 @@ class MonotonicSearch(technique.SequentialSearchTechnique):
         driver = self.driver
         manipulator = self.manipulator
 
-        current = manipulator.copy(
-            driver.get_configuration(
-                manipulator.random()))
+        n = driver.get_configuration(manipulator.random())
+        current = manipulator.copy(n.data)
 
         # we only handle one parameter for now
-        if len(manipulator.parameters(current.data)) > 1:
+        if len(manipulator.parameters(n.data)) > 1:
             raise Exception("Only one parameter for now")
 
         # start at the highest value for the parameter
-        for param in manipulator.parameters(current.data):
+        for param in manipulator.parameters(n.data):
             param.set_value(current, param.max_value)
         current = driver.get_configuration(current)
         yield current
 
-        step_size = 0.25
+        step_size = 0.15
         go_down = True
         n = current
 
