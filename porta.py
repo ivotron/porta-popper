@@ -18,6 +18,7 @@ from opentuner import ConfigurationManipulator
 from opentuner import IntegerParameter
 from opentuner import MeasurementInterface
 from opentuner import Result
+from opentuner.search import technique
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +41,61 @@ parser.add_argument('--show-bench-results', action='store_true',
 parser.add_argument('--category', help=argparse.SUPPRESS)
 parser.add_argument('--target', type=json.loads, help=argparse.SUPPRESS)
 parser.add_argument('--outjson', help=argparse.SUPPRESS)
+
+
+class MonotonicSearch(technique.SequentialSearchTechnique):
+    """
+    Assumes a monotonically increasing/decreasing function
+    """
+    def main_generator(self):
+        objective = self.objective
+        driver = self.driver
+        manipulator = self.manipulator
+
+        current = manipulator.copy(
+            driver.get_configuration(
+                manipulator.random()))
+
+        # we only handle one parameter for now
+        if len(manipulator.parameters(current.data)) > 1:
+            raise Exception("Only one parameter for now")
+
+        # start at the highest value for the parameter
+        for param in manipulator.parameters(current.data):
+            param.set_value(current, param.max_value)
+        current = driver.get_configuration(current)
+        yield current
+
+        step_size = 0.25
+        go_down = True
+        n = current
+
+        while True:
+            for param in manipulator.parameters(current.data):
+                # get current value of param, scaled to be in range [0.0, 1.0]
+                unit_value = param.get_unit_value(current.data)
+
+                if go_down:
+                    n = manipulator.copy(current.data)
+                    param.set_unit_value(n, max(0.0, unit_value - step_size))
+                    n = driver.get_configuration(n)
+                    yield n
+                else:
+                    n = manipulator.copy(current.data)
+                    param.set_unit_value(n, max(0.0, unit_value + step_size))
+                    n = driver.get_configuration(n)
+                    yield n
+
+            if objective.lt(n, current):
+                # new point is better, so that's the new current
+                current = n
+            else:
+                # if we were going down, then go up but half-step (or viceversa)
+                go_down = not go_down
+                step_size /= 2.0
+
+# register our new technique in global list
+technique.register(MonotonicSearch())
 
 
 class PortaTuner(MeasurementInterface):
