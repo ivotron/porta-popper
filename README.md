@@ -24,7 +24,7 @@ tunable parameters (in a `parameters.json` file). Example output:
 }
 ```
 
-# Results file
+# `targets.json` file
 
 The results that are intended to be ported to another platform are 
 contained in one or more files in JSON format. For example, the 
