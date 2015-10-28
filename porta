@@ -22,7 +22,6 @@ case $1 in
   "tune")
     echo "" > parameters.json
     docker run \
-      --workdir=/ \
       --rm \
       --privileged \
       -v /sys/kernel/debug:/sys/kernel/debug \
@@ -36,6 +35,22 @@ case $1 in
       --net=host \
       -e DOCKER_HOST=$DOCKER_HOST \
          ivotron/porta --action $@
+    ;;
+  "run")
+    docker run \
+      --rm \
+      --privileged \
+      --entrypoint=/usr/bin/run.py \
+      -v /sys/kernel/debug:/sys/kernel/debug \
+      -v /usr/src:/usr/src \
+      -v /lib/modules:/lib/modules \
+      -v `which docker`:/usr/bin/docker \
+      -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
+      -v /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1 \
+      -v `pwd`/parameters.json:/parameters.json \
+      --net=host \
+      -e DOCKER_HOST=$DOCKER_HOST \
+         ivotron/porta "${@:2}"
     ;;
   *)
     echo "Unknown action '$1'"

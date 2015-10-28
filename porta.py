@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
-# Autotune docker execution engine parameters to resemble the performance of
-#
+# Autotune --cpu-quota and --mem-bw-limit parameters to port the performance of
+# a container between machines
 
 import os
 t = os.path.join(os.path.dirname(__file__), os.path.expandvars(
@@ -197,29 +197,26 @@ if __name__ == '__main__':
 
     if args.action == 'none':
         raise Exception("Need one action provided with --action")
-        exit()
-
-    if args.action == 'base':
+    elif args.action == 'base':
         print(subprocess.check_output(
               ('docker run --rm --cpuset-cpus=0 -e BENCHMARKS="{}"'
                '  ivotron/microbench').format(' '.join(args.benchmarks)),
               stderr=subprocess.PIPE, shell=True))
-        exit()
+    elif args.action == 'tune':
+        # read input
+        if not args.target_file:
+            raise Exception('Expecting name of file with target results')
+        with open(args.target_file) as f:
+            args.target = json.load(f)
 
-    # read input
-    if not args.target_file:
-        raise Exception('Expecting name of file with target results')
-    with open(args.target_file) as f:
-        args.target = json.load(f)
+        # initialize output dict
+        args.outjson = {}
 
-    # initialize output dict
-    args.outjson = {}
+        # invoke opentuner for each category
+        for category in args.categories:
+            args.category = category
+            PortaTuner.main(args)
 
-    # invoke opentuner for each category
-    for category in args.categories:
-        args.category = category
-        PortaTuner.main(args)
-
-    # write output file
-    with open(args.output_file, 'a') as f:
-        json.dump(args.outjson, f)
+        # write output file
+        with open(args.output_file, 'a') as f:
+            json.dump(args.outjson, f)

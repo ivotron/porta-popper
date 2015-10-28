@@ -23,6 +23,7 @@ ENV PATH /opentuner/venv/bin/:$PATH
 
 ADD docker-run-wrapper /usr/bin/
 ADD porta.py /usr/bin/
+ADD run.py /usr/bin/
 
 ENTRYPOINT ["/usr/bin/porta.py"]
 CMD ["--help"]

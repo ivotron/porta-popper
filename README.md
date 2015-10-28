@@ -1,21 +1,31 @@
 # porta
 
-Generate performance metrics for a system (stored in `target.json` 
-output file):
+Porta lets you port a container's performance between distinct 
+platforms. It achieves this by obtaining base metrics of a system and 
+tuning container execution parameters of other systems where the 
+original performance is intended to be replicated.
+
+--------
+
+Generate performance metrics for a system:
 
 ```bash
 porta base
 ```
 
-Tune a system:
+The above stores the output in a `target.json` output file.
+
+--------
+
+Tune a system to replicate the performance of a container:
 
 ```bash
 porta tune
 ```
 
-Which expects a `target.json` file in the current directory (or one 
-can be passed with `--target-file`) and generates the values of 
-tunable parameters (in a `parameters.json` file). Example output:
+Which expects a `target.json` file in the current directory and 
+generates the values of tunable parameters (in a `parameters.json` 
+file). Example output:
 
 ```javascript
 {
@@ -23,6 +33,19 @@ tunable parameters (in a `parameters.json` file). Example output:
   "cpu-quota": 68700
 }
 ```
+
+--------
+
+Finally, to run a container with the intent of replicating 
+performance:
+
+```bash
+porta run --name foo --rm repo/container
+```
+
+Which expects a `parameters.json` file in the current directory. The 
+arguments to `run` are similar to the ones for `docker run` but 
+`porta` adds the `--cpu-quota` and `--mem-bw-limit` arguments.
 
 # `targets.json` file
 
@@ -58,10 +81,10 @@ If class is `processor`, units should be in seconds. If `memory`,
 
 The `ivotron/microbench` docker image contains a list of commonly used 
 micro-benchmarks. This is what gets executed via the `base` subcommand 
-of `porta` to obtain the target metrics of a base system A. These get 
-passed when porting the performance to another system B (i.e. the 
-`targets.json` file passed to the `tune` subcommand when `porta` runs 
-on system B).
+of `porta` to obtain the target metrics of a base system A. These 
+performance results get passed when porting the performance to another 
+system B (i.e. the `targets.json` file passed to the `tune` subcommand 
+when `porta` runs on system B).
 
 <!--
 ## Adding new benchmarks
