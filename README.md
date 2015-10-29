@@ -13,17 +13,17 @@ Generate performance metrics for a system:
 porta base
 ```
 
-The above stores the output in a `target.json` output file.
+The above stores the output in a `base.json` output file.
 
 --------
 
-Tune a system to replicate the performance of a container:
+Tune a target system to replicate the performance of a container:
 
 ```bash
 porta tune
 ```
 
-Which expects a `target.json` file in the current directory and 
+Which expects a `base.json` file in the current directory and 
 generates the values of tunable parameters (in a `parameters.json` 
 file). Example output:
 
@@ -47,10 +47,10 @@ Which expects a `parameters.json` file in the current directory. The
 arguments to `run` are similar to the ones for `docker run` but 
 `porta` adds the `--cpu-quota` and `--mem-bw-limit` arguments.
 
-# `targets.json` file
+# `base.json` file
 
-The results that are intended to be ported to another platform are 
-contained in one or more files in JSON format. For example, the 
+The results that are intended to be ported to other target platforms 
+are contained in one or more files in JSON format. For example, the 
 results of the STREAM micro-benchmark might be specified as:
 
 ```javascript
@@ -81,9 +81,9 @@ If class is `processor`, units should be in seconds. If `memory`,
 
 The `ivotron/microbench` docker image contains a list of commonly used 
 micro-benchmarks. This is what gets executed via the `base` subcommand 
-of `porta` to obtain the target metrics of a base system A. These 
-performance results get passed when porting the performance to another 
-system B (i.e. the `targets.json` file passed to the `tune` subcommand 
+of `porta` to obtain the metrics of a base system A. These performance 
+results get passed when porting the performance to another target 
+system B (i.e. the `base.json` file passed to the `tune` subcommand 
 when `porta` runs on system B).
 
 <!--

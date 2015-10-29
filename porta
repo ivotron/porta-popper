@@ -17,7 +17,7 @@ case $1 in
       -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
       --net=host \
       -e DOCKER_HOST=$DOCKER_HOST \
-         ivotron/porta --action $@ > target.json
+         ivotron/porta --action $@ > base.json
     ;;
   "tune")
     echo "" > parameters.json
@@ -30,7 +30,7 @@ case $1 in
       -v `which docker`:/usr/bin/docker \
       -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
       -v /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1 \
-      -v `pwd`/target.json:/target.json \
+      -v `pwd`/base.json:/base.json \
       -v `pwd`/parameters.json:/parameters.json \
       --net=host \
       -e DOCKER_HOST=$DOCKER_HOST \

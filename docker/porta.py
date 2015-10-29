@@ -25,12 +25,12 @@ log = logging.getLogger(__name__)
 parser = argparse.ArgumentParser(parents=opentuner.argparsers())
 parser.add_argument('--action', default='none',
                     choices=('base', 'tune'),
-                    help='Whether to tune or generate target results')
+                    help='Whether to tune or generate base results')
 parser.add_argument('--categories', default=['processor', 'memory'], nargs='+',
                     help=('Type of benchmarks to consider. One or more values'
                           ' of processor, memory, io or net.'))
-parser.add_argument('--target-file', default='target.json',
-                    help=('JSON file containing target performance results'))
+parser.add_argument('--base-file', default='base.json',
+                    help=('JSON file containing results of base system'))
 parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
 parser.add_argument('--benchmarks', default=['stream-copy', 'crafty'],
@@ -39,7 +39,7 @@ parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
 # internal arguments
 parser.add_argument('--category', help=argparse.SUPPRESS)
-parser.add_argument('--target', type=json.loads, help=argparse.SUPPRESS)
+parser.add_argument('--base', type=json.loads, help=argparse.SUPPRESS)
 parser.add_argument('--outjson', help=argparse.SUPPRESS)
 
 
@@ -122,8 +122,8 @@ class PortaTuner(MeasurementInterface):
         """
         cfg = desired_result.configuration.data
 
-        target = self.args.target
-        benchs = self.get_benchmarks_for_category(self.args.benchmarks, target,
+        base = self.args.base
+        benchs = self.get_benchmarks_for_category(self.args.benchmarks, base,
                                                   self.args.category)
         if not benchs:
             raise Exception("No benchmarks for " + self.args.category)
@@ -136,17 +136,17 @@ class PortaTuner(MeasurementInterface):
                 'Non-zero exit code:\n{}\nstdout:\n{}\nstderr:\n{}'.format(
                     docker_cmd, str(result['stdout']), str(result['stderr'])))
 
-        current = json.loads(result['stdout'])
+        target = json.loads(result['stdout'])
 
         diff_count = 0
         diff_sum = 0.0
-        for bench in current:
+        for bench in target:
             if self.args.show_bench_results:
                 log.info(
-                    bench + ": " + current[bench]['result'] + " " + str(cfg))
-            current_result = float(current[bench]['result'])
+                    bench + ": " + target[bench]['result'] + " " + str(cfg))
             target_result = float(target[bench]['result'])
-            diff_sum += abs(current_result - target_result)
+            base_result = float(base[bench]['result'])
+            diff_sum += abs(target_result - base_result)
             diff_count += 1
         diff_mean = diff_sum / diff_count
         diff_mean += 1  # avoid division by zero
@@ -159,11 +159,11 @@ class PortaTuner(MeasurementInterface):
     def objective(self):
         return opentuner.search.objective.MaximizeAccuracy()
 
-    def get_benchmarks_for_category(self, benchmarks, target, category):
+    def get_benchmarks_for_category(self, benchmarks, base, category):
         benchs = []
-        for benchmark in target:
+        for benchmark in base:
             if benchmark in benchmarks:
-                if target[benchmark]['class'] == category:
+                if base[benchmark]['class'] == category:
                     benchs.append(benchmark)
         return benchs
 
@@ -204,10 +204,10 @@ if __name__ == '__main__':
               stderr=subprocess.PIPE, shell=True))
     elif args.action == 'tune':
         # read input
-        if not args.target_file:
-            raise Exception('Expecting name of file with target results')
-        with open(args.target_file) as f:
-            args.target = json.load(f)
+        if not args.base_file:
+            raise Exception('Expecting name of file with base results')
+        with open(args.base_file) as f:
+            args.base = json.load(f)
 
         # initialize output dict
         args.outjson = {}
