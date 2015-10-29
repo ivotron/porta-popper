@@ -33,7 +33,9 @@ parser.add_argument('--base-file', default='base.json',
                     help=('JSON file containing results of base system'))
 parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
-parser.add_argument('--benchmarks', default=['stream-copy', 'crafty'],
+parser.add_argument('--benchmarks',
+                    default=['stream-copy', 'stream-add', 'stream-scale',
+                             'stream-triad', 'crafty', 'c-ray'],
                     nargs='+', help='benchmarks to execute')
 parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
