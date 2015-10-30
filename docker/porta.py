@@ -140,26 +140,28 @@ class PortaTuner(MeasurementInterface):
 
         target = json.loads(result['stdout'])
 
-        diff_count = 0
-        diff_sum = 0.0
+        count = 0
+        speedup_sum = 0.0
         for bench in target:
-            if self.args.show_bench_results:
-                log.info(
-                    bench + ": " + target[bench]['result'] + " " + str(cfg))
-            target_result = float(target[bench]['result'])
             base_result = float(base[bench]['result'])
-            diff_sum += abs(target_result - base_result)
-            diff_count += 1
-        diff_mean = diff_sum / diff_count
-        diff_mean += 1  # avoid division by zero
+            target_result = float(target[bench]['result'])
+            speedup = target_result/base_result
+            speedup_sum += speedup
+            count += 1
 
-        # TODO: multiply accuracy by variance (or stddev) to factor in the
-        # variability in the differences between distinct results
+            if self.args.show_bench_results:
+                log.info(bench + ": " + target[bench]['result'] + " " +
+                         str(cfg) + " speedup: " + str(speedup))
 
-        return Result(accuracy=(1000/diff_mean), time=0.0)
+        speedup_mean = speedup_sum / count
 
-    def objective(self):
-        return opentuner.search.objective.MaximizeAccuracy()
+        if speedup_mean < 1.0:
+            # heuristic that reflects the speedup on 1.0 to prevent the
+            # optimization to minimize up to 0. E.g. instead of having
+            # a speedup of 0.952, we have a speedup of 1.048
+            speedup_mean = 1 + (1.0 - speedup_mean)
+
+        return Result(time=speedup_mean)
 
     def get_benchmarks_for_category(self, benchmarks, base, category):
         benchs = []
