@@ -1,9 +1,9 @@
 # porta
 
 Porta lets you port a container's performance between distinct 
-platforms. It achieves this by obtaining base metrics of a system and 
-tuning container execution parameters of other systems where the 
-original performance is intended to be replicated.
+hardware platforms. It achieves this by obtaining base metrics of a 
+system and tuning container execution parameters of other systems 
+where the original performance is intended to be replicated.
 
 --------
 
@@ -45,7 +45,9 @@ porta run --name foo --rm repo/container
 
 Which expects a `parameters.json` file in the current directory. The 
 arguments to `run` are similar to the ones for `docker run` but 
-`porta` adds the `--cpu-quota` and `--mem-bw-limit` arguments.
+`porta` adds the values for the  `--cpu-quota` and `--mem-bw-limit` 
+parameters that are passed to the 
+[docker-run-wrapper](docker/docker-run-wrapper) command.
 
 # `base.json` file
 
@@ -100,4 +102,4 @@ the `--file` flag of the `base` command.
 # Dependencies
 
   * Docker 1.7+
-  * Linux headers for host kernel
+  * Linux 3.13-* (along with kernel headers)
