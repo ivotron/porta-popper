@@ -43,7 +43,7 @@ if ! [[ $1 =~ $re ]] ; then
 fi
 
 # unload memguard (if previously loaded)
-rmmod memguard
+rmmod memguard &> /dev/null
 
 # build and load module
 if [ -z "$MEMGUARD_PATH" ] ; then
@@ -54,12 +54,10 @@ make &> /dev/null
 if [ $? -ne 0 ] ; then
   exit 1
 fi
-insmod $MEMGUARD_PATH/memguard.ko
+insmod $MEMGUARD_PATH/memguard.ko &> /dev/null
 if [ $? -ne 0 ] ; then
   exit 1
 fi
-# get maxbw
-$maxbw=`cat /sys/kernel/debug/memguard/control | grep maxbw | sed -e 's/maxbw: \(.*\) (MB\/s)/\1/'`
 
 # set bandwidth limit for core 0
 echo mb $1 > /sys/kernel/debug/memguard/limit
@@ -72,4 +70,4 @@ if [ $? -ne 0 ] ; then
 fi
 
 # unload memguard (if previously loaded)
-rmmod memguard
+rmmod memguard &> /dev/null

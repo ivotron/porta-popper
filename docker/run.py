@@ -11,7 +11,6 @@ with open('parameters.json') as f:
     cmd = ('docker-run-wrapper {} --cpu-quota={} ' + run_args).format(
         params['mem-bw-limit'],
         params['cpu-quota'])
-    print(cmd)
     p = subprocess.Popen(cmd,
                          shell=True,
                          stdout=subprocess.PIPE,
