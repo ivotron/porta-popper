@@ -1,0 +1,12 @@
+[base]
+# a single hostname corresponding to the machine whose performance is to be 
+# ported to other platforms
+piha.soe.ucsc.edu ansible_ssh_user=ivo
+
+[targets]
+#dwill.soe.ucsc.edu
+#192.168.140.85
+apt041.apt.emulab.net ansible_ssh_user=ivotron
+#pc551.emulab.net ansible_ssh_user=ivotron
+#clnode094.clemson.cloudlab.us ansible_ssh_user=ivotron
+#pc-c220m4-r04-13.wisc.cloudlab.us ansible_ssh_user=ivotron

@@ -2,3 +2,6 @@
 base.json
 parameters.json
 .ropeproject
+ansible/parameters
+ansible/tests
+ansible/tests.json
