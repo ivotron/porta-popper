@@ -222,5 +222,5 @@ if __name__ == '__main__':
             PortaTuner.main(args)
 
         # write output file
-        with open(args.output_file, 'a') as f:
+        with open(args.output_file) as f:
             json.dump(args.outjson, f)
