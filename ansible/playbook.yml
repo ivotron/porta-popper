@@ -14,27 +14,20 @@
       - "'base' in groups"
       - "'targets' in groups"
       - "groups.base|length == 1"
+      - "groups.targets|length > 0"
       - "benchmarks is defined"
-    tags:
-    - preconditions
 
   roles:
   - role: angstwad.docker_ubuntu
     docker_opts: "--host tcp://0.0.0.0:2375"
     when:
     - install_docker|bool
-    tags:
-    - install
 
   tasks:
   - name: install linux linux-headers
     apt: name=linux-headers-{{ ansible_kernel }}
-    tags:
-    - install
   - name: install jq
     apt: name=jq state=present
-    tags:
-    - install
   - name: create temp folder
     file: path=/tmp/porta state=directory mode=0755
   - name: create test folder inside porta
@@ -83,13 +76,15 @@
   - name: pull benchmark images
     command: docker pull {{ item }}
     with_items: benchmarks
-  - name: execute testing benchmarks
-    shell: ./porta run --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}.json chdir=/tmp/porta
+  - name: execute testing benchmarks on base
+    shell: docker run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}.json chdir=/tmp/porta
+    with_items: benchmarks
+    when: inventory_hostname in groups.base
+  - name: execute testing benchmarks on targets
+    shell: ./porta run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}.json chdir=/tmp/porta
     with_items: benchmarks
     when: inventory_hostname in groups.targets
   - name: merge outputs
-    command: jq -s add /tmp/porta/tests/*.json | tee /tmp/porta/tests.json
-    when: inventory_hostname in groups.targets
+    command: jq -s add /tmp/porta/tests/*.json > /tmp/porta/tests.json
   - name: fetch results files to compare
     fetch: src=/tmp/porta/tests.json dest=tests/{{ inventory_hostname }}.json flat=yes
-    when: inventory_hostname in groups.targets
