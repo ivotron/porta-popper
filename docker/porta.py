@@ -233,3 +233,4 @@ if __name__ == '__main__':
         # write output file
         with open(args.output_file, 'w') as f:
             json.dump(args.outjson, f)
+            f.write('\n')
