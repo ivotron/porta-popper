@@ -18,9 +18,9 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 
-echo "{"
-echo `sed -n 's/"\(SET\)",\(.*\)/"redis-\L\1": { "result": \2 },/p' output`
-echo `sed -n 's/"\(GET\)",\(.*\)/"redis-\L\1": { "result": \2 },/p' output`
-echo `sed -n 's/"\(LPUSH\)",\(.*\)/"redis-\L\1": { "result": \2 },/p' output`
-echo `sed -n 's/"\(LPOP\)",\(.*\)/"redis-\L\1": { "result": \2 }/p' output`
-echo "}"
+echo "["
+echo `sed -n 's/"\(SET\)",\(.*\)/{"name": "redis-\L\1","class": "memory", "result": \2},/p' output`
+echo `sed -n 's/"\(GET\)",\(.*\)/{"name": "redis-\L\1","class": "memory", "result": \2},/p' output`
+echo `sed -n 's/"\(LPUSH\)",\(.*\)/{"name": "redis-\L\1","class": "memory", "result": \2},/p' output`
+echo `sed -n 's/"\(LPOP\)",\(.*\)/{"name": "redis-\L\1","class": "memory", "result": \2}/p' output`
+echo "]"

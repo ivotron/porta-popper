@@ -41,7 +41,7 @@ parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
 # internal arguments
 parser.add_argument('--category', help=argparse.SUPPRESS)
-parser.add_argument('--base', type=json.loads, help=argparse.SUPPRESS)
+parser.add_argument('--base-data', type=json.loads, help=argparse.SUPPRESS)
 parser.add_argument('--outjson', help=argparse.SUPPRESS)
 
 
@@ -99,6 +99,41 @@ class MonotonicSearch(technique.SequentialSearchTechnique):
 technique.register(MonotonicSearch())
 
 
+def get_result(results_data, bench_name):
+    for bench in results_data:
+        if bench['name'] == bench_name:
+            return float(bench['result'])
+    raise Exception("Can't find result for benchmark " + bench_name)
+
+
+def get_benchmarks_for_category(benchmarks, base_data, category):
+    benchs = []
+    for bench in base_data:
+        if bench['name'] in benchmarks and bench['class'] == category:
+            benchs.append(bench['name'])
+    return benchs
+
+
+def get_cmd_for_class(category, benchmarks, cfg):
+    if category == 'processor':
+        return ('docker run '
+                ' --cpuset-cpus=0'
+                ' --cpu-quota={}'
+                ' -e BENCHMARKS="{}"'
+                ' --rm'
+                ' ivotron/microbench').format(
+                    cfg['cpu-quota'],
+                    ' '.join(benchmarks))
+    elif category == 'memory':
+        return ('docker-run-wrapper {}'
+                ' --cpuset-cpus=0'
+                ' -e BENCHMARKS="{}"'
+                ' --rm'
+                ' ivotron/microbench').format(
+                    cfg['mem-bw-limit'],
+                    ' '.join(benchmarks))
+
+
 class PortaTuner(MeasurementInterface):
     def manipulator(self):
         """
@@ -124,13 +159,14 @@ class PortaTuner(MeasurementInterface):
         """
         cfg = desired_result.configuration.data
 
-        base = self.args.base
-        benchs = self.get_benchmarks_for_category(self.args.benchmarks, base,
-                                                  self.args.category)
+        base_data = self.args.base_data
+        benchs = get_benchmarks_for_category(self.args.benchmarks,
+                                             base_data,
+                                             self.args.category)
         if not benchs:
             raise Exception("No benchmarks for " + self.args.category)
 
-        docker_cmd = self.get_cmd_for_class(self.args.category, benchs, cfg)
+        docker_cmd = get_cmd_for_class(self.args.category, benchs, cfg)
 
         result = self.call_program(docker_cmd)
         if result['returncode'] != 0:
@@ -138,19 +174,19 @@ class PortaTuner(MeasurementInterface):
                 'Non-zero exit code:\n{}\nstdout:\n{}\nstderr:\n{}'.format(
                     docker_cmd, str(result['stdout']), str(result['stderr'])))
 
-        target = json.loads(result['stdout'])
+        target_data = json.loads(result['stdout'])
 
         count = 0
         speedup_sum = 0.0
-        for bench in target:
-            base_result = float(base[bench]['result'])
-            target_result = float(target[bench]['result'])
+        for bench_name in benchs:
+            base_result = get_result(base_data, bench_name)
+            target_result = get_result(target_data, bench_name)
             speedup = target_result/base_result
             speedup_sum += speedup
             count += 1
 
             if self.args.show_bench_results:
-                log.info(bench + ": " + target[bench]['result'] + " " +
+                log.info(bench_name + ": " + str(target_result) + " " +
                          str(cfg) + " speedup: " + str(speedup))
 
         speedup_mean = speedup_sum / count
@@ -162,33 +198,6 @@ class PortaTuner(MeasurementInterface):
             speedup_mean = 1 + (1.0 - speedup_mean)
 
         return Result(time=speedup_mean)
-
-    def get_benchmarks_for_category(self, benchmarks, base, category):
-        benchs = []
-        for benchmark in base:
-            if benchmark in benchmarks:
-                if base[benchmark]['class'] == category:
-                    benchs.append(benchmark)
-        return benchs
-
-    def get_cmd_for_class(self, category, benchmarks, cfg):
-        if category == 'processor':
-            return ('docker run '
-                    ' --cpuset-cpus=0'
-                    ' --cpu-quota={}'
-                    ' -e BENCHMARKS="{}"'
-                    ' --rm'
-                    ' ivotron/microbench').format(
-                        cfg['cpu-quota'],
-                        ' '.join(benchmarks))
-        elif category == 'memory':
-            return ('docker-run-wrapper {}'
-                    ' --cpuset-cpus=0'
-                    ' -e BENCHMARKS="{}"'
-                    ' --rm'
-                    ' ivotron/microbench').format(
-                        cfg['mem-bw-limit'],
-                        ' '.join(benchmarks))
 
     def save_final_config(self, configuration):
         '''
@@ -211,7 +220,7 @@ if __name__ == '__main__':
         if not args.base_file:
             raise Exception('Expecting name of file with base results')
         with open(args.base_file) as f:
-            args.base = json.load(f)
+            args.base_data = json.load(f)
 
         # initialize output dict
         args.outjson = {}
@@ -222,5 +231,5 @@ if __name__ == '__main__':
             PortaTuner.main(args)
 
         # write output file
-        with open(args.output_file) as f:
+        with open(args.output_file, 'w') as f:
             json.dump(args.outjson, f)

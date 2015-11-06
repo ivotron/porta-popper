@@ -56,24 +56,28 @@ are contained in one or more files in JSON format. For example, the
 results of the STREAM micro-benchmark might be specified as:
 
 ```javascript
-{
-  "stream-copy": {
+[
+  {
+    "name": "stream-copy"
     "class": "memory",
     "result": "4058"
   }
-}
+]
 ```
 
 In general, the schema for results has the form:
 
 ```javascript
-{
-  "bench-name": {
+[
+  {
+    "name": "name of benchmark",
     "class": "one of memory|processor|network|io",
     "result": "number"
   },
-  "otherbench": { ... }
-}
+  {
+    ...
+  }
+]
 ```
 
 If class is `processor`, units should be in seconds. If `memory`, 

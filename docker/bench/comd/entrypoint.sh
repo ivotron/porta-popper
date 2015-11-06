@@ -9,4 +9,8 @@ if [ $? -ne 0 ] ; then
 fi
 
 result=`sed -n 's/total *1 *\([0-9]*\.[0-9]*\) *.*/\1/p' output`
-echo "{ \"comd-serial\": { \"class\": \"processor\", \"result\": \"$result\" } }"
+echo "[{"
+echo "\"name\": \"comd-serial\", "
+echo "\"class\": \"processor\", "
+echo "\"result\": \"$result\" "
+echo "}]"
