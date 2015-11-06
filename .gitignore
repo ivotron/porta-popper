@@ -5,3 +5,4 @@ parameters.json
 ansible/parameters
 ansible/tests
 ansible/tests.json
+ansible/roles/

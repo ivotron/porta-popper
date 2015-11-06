@@ -82,6 +82,6 @@
     with_items: benchmarks
     when: inventory_hostname in groups.targets
   - name: merge outputs
-    command: jq -s add /tmp/porta/tests/*.json > /tmp/porta/tests.json
+    shell: jq -s add /tmp/porta/tests/*.json > /tmp/porta/tests.json
   - name: fetch results files to compare
     fetch: src=/tmp/porta/tests.json dest=tests/{{ inventory_hostname }}.json flat=yes
