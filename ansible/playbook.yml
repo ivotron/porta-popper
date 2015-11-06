@@ -1,6 +1,4 @@
 - hosts: all
-  environment:
-    DOCKER_HOST: tcp://0.0.0.0:2375
   vars:
     install_docker: no
     skip_tuning: no
@@ -19,7 +17,6 @@
 
   roles:
   - role: angstwad.docker_ubuntu
-    docker_opts: "--host tcp://0.0.0.0:2375"
     when:
     - install_docker|bool
 
