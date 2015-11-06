@@ -14,9 +14,7 @@ case $1 in
     docker run \
       --rm \
       -v `which docker`:/usr/bin/docker \
-      -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
-      --net=host \
-      -e DOCKER_HOST=$DOCKER_HOST \
+      -v /var/run/docker.sock:/var/run/docker.sock \
          ivotron/porta --action $@ > base.json
     ;;
   "tune")
@@ -27,13 +25,10 @@ case $1 in
       -v /sys/kernel/debug:/sys/kernel/debug \
       -v /usr/src:/usr/src \
       -v /lib/modules:/lib/modules \
-      -v `which docker`:/usr/bin/docker \
-      -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
-      -v /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1 \
       -v `pwd`/base.json:/base.json \
       -v `pwd`/parameters.json:/parameters.json \
-      --net=host \
-      -e DOCKER_HOST=$DOCKER_HOST \
+      -v `which docker`:/usr/bin/docker \
+      -v /var/run/docker.sock:/var/run/docker.sock \
          ivotron/porta --parallelism 1 --test-limit 20 --technique MonotonicSearch --bail-threshold 1 --action $@
     ;;
   "run")
@@ -44,12 +39,9 @@ case $1 in
       -v /sys/kernel/debug:/sys/kernel/debug \
       -v /usr/src:/usr/src \
       -v /lib/modules:/lib/modules \
-      -v `which docker`:/usr/bin/docker \
-      -v /usr/lib/libapparmor.so.1:/usr/lib/libapparmor.so.1 \
-      -v /usr/lib/x86_64-linux-gnu/libapparmor.so.1:/usr/lib/x86_64-linux-gnu/libapparmor.so.1 \
       -v `pwd`/parameters.json:/parameters.json \
-      --net=host \
-      -e DOCKER_HOST=$DOCKER_HOST \
+      -v `which docker`:/usr/bin/docker \
+      -v /var/run/docker.sock:/var/run/docker.sock \
          ivotron/porta "${@:2}"
     ;;
   *)

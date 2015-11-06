@@ -8,9 +8,9 @@ RUN apt-get update && \
     wget --no-check-certificate https://github.com/jansel/opentuner/tarball/master -O - | tar xz && \
     mv jansel* opentuner && \
     cd /opentuner && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
       `cat debian-packages-deps | tr '\n' ' '` \
-      module-init-tools && \
+      module-init-tools lxc && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     python ./venv-bootstrap.py && \
