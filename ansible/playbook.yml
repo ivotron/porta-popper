@@ -2,7 +2,7 @@
   vars:
     install_docker: no
     skip_tuning: no
-    skip_tests_on_base: yes
+    skip_tests_on_base: no
   pre_tasks:
   - name: Assert preconditions
     assert:
@@ -74,16 +74,16 @@
   - name: pull benchmark images
     command: docker pull {{ item }}
     with_items: benchmarks
-  - name: execute testing benchmarks on base
-    shell: docker run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}.json chdir=/tmp/porta
-    with_items: benchmarks
+  - name: send parameters file to base machine
+    copy: src=parameters_for_base.json dest=/tmp/porta/parameters.json mode=0644
     when:
     - inventory_hostname in groups.base
     - not skip_tests_on_base|bool
-  - name: execute testing benchmarks on targets
+  - name: execute testing benchmarks
     shell: ./porta run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}.json chdir=/tmp/porta
     with_items: benchmarks
-    when: inventory_hostname in groups.targets
+    when:
+    - inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_tests_on_base|bool)
   - name: merge outputs
     shell: jq -s add /tmp/porta/tests/*.json > /tmp/porta/tests.json
   - name: fetch results files to compare
