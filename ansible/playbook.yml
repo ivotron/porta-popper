@@ -74,17 +74,21 @@
   - name: pull benchmark images
     command: docker pull {{ item }}
     with_items: benchmarks
-  - name: send parameters file to base machine
-    copy: src=parameters_for_base.json dest=/tmp/porta/parameters.json mode=0644
-    when:
-    - inventory_hostname in groups.base
-    - not skip_tests_on_base|bool
-  - name: execute testing benchmarks
-    shell: ./porta run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}.json chdir=/tmp/porta
+  - name: execute testing benchmarks without limits
+    shell: docker run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_no_limits.json chdir=/tmp/porta
     with_items: benchmarks
     when:
     - inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_tests_on_base|bool)
-  - name: merge outputs
-    shell: jq -s add /tmp/porta/tests/*.json > /tmp/porta/tests.json
-  - name: fetch results files to compare
-    fetch: src=/tmp/porta/tests.json dest=tests/{{ inventory_hostname }}.json flat=yes
+  - name: execute testing benchmarks with limits
+    shell: ./porta run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_limits.json chdir=/tmp/porta
+    with_items: benchmarks
+    when:
+    - inventory_hostname in groups.targets
+  - name: merge outputs without limits
+    shell: jq -s add /tmp/porta/tests/*_no_limits.json > /tmp/porta/tests_no_limits.json
+  - name: merge outputs with limits
+    shell: jq -s add /tmp/porta/tests/*_limits.json > /tmp/porta/tests_limits.json
+  - name: fetch without limits results
+    fetch: src=/tmp/porta/tests_no_limits.json dest=tests/{{ inventory_hostname }}_no_limits.json flat=yes
+  - name: fetch with limits results
+    fetch: src=/tmp/porta/tests_limits.json dest=tests/{{ inventory_hostname }}_limits.json flat=yes
