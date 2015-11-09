@@ -22,5 +22,5 @@ RUN apt-get update && \
        build-essential autoconf libnuma-dev mesa-utils unzip && \
     apt-get autoremove -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-ADD run.sh /root/
-ENTRYPOINT ["/root/run.sh"]
+ADD entrypoint.sh /root/
+ENTRYPOINT ["/root/entrypoint.sh"]
