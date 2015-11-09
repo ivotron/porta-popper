@@ -13,7 +13,7 @@ echo "\"class\": \"processor\", "
 echo "\"result\": \"$result\" "
 echo "},"
 
-sysbench --test=memory --memory-total-size=5G run > output
+sysbench --test=memory run > output
 
 if [ $? -ne 0 ] ; then
    cat output
@@ -22,7 +22,7 @@ fi
 
 result=`cat output | grep 'total time:' | awk '{ print $NF }' | sed 's/s//'`
 echo "{"
-echo "\"name\": \"sysbench-cpu\", "
+echo "\"name\": \"sysbench-memory\", "
 echo "\"class\": \"memory\", "
 echo "\"result\": \"$result\" "
 echo "}]"
