@@ -10,4 +10,5 @@ RUN apt-get update && apt-get install -y wget make gcc gfortran && \
     apt-get install -y time libgfortran3 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ADD entrypoint.sh /usr/bin/
+WORKDIR /cloverleaf
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]

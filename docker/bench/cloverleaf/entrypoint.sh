@@ -1,5 +1,4 @@
 #!/bin/bash
-cd /cloverleaf/
 
 TIME=%e time -o output ./clover_leaf &> /dev/null
 

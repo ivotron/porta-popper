@@ -1,5 +1,4 @@
 #!/bin/bash
-cd /comd/bin
 
 ./CoMD-serial > output
 

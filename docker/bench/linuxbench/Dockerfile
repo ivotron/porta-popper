@@ -4,7 +4,7 @@ FROM ivotron/phoronix
 
 ADD user-config.xml /root/.phoronix-test-suite/
 ADD pts_result_file_output /usr/share/phoronix-test-suite/pts-core/objects/pts_result_file_output.php
-RUN apt-get update && \
+RUN apt-get update && apt-get install -y build-essential jq && \
     sed -i -e "s/'NUM_CPU_CORES'.*/'NUM_CPU_CORES' => 1,/" /usr/share/phoronix-test-suite/pts-core/objects/client/pts_client.php && \
     CFLAGS="-O0 -mtune=generic" CXXFLAGS="-O0 -mtune=generic" phoronix-test-suite batch-install \
        pts/bullet \
@@ -17,10 +17,7 @@ RUN apt-get update && \
        pts/dcraw \
        pts/encode-mp3 \
        pts/encode-flac \
-       pts/encode-ogg \
        pts/encode-ape \
-       pts/encode-wavpack \
-       pts/etqw-demo \
        pts/ffmpeg \
        pts/fhourstones \
        pts/gcrypt \
@@ -37,11 +34,9 @@ RUN apt-get update && \
        pts/minion \
        pts/mrbayes \
        pts/n-queens \
-       pts/nero2d \
        pts/npb \
        pts/openssl \
        pts/padman \
-       pts/povray \
        pts/pybench \
        pts/scimark2 \
        pts/smallpt \
@@ -53,9 +48,6 @@ RUN apt-get update && \
        pts/vdrift \
        pts/x264 && \
     apt-get autoremove -y && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN apt-get update && \
-    apt-get install -y jq && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ADD entrypoint.sh /root/
 ENTRYPOINT ["/root/entrypoint.sh"]
