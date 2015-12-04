@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "machine,limits,benchmark,class,result" > alltests.csv
+
+for i in tests/* ; do
+  n=`basename $i`
+  if [[ $n == *"_without_limits.json"* ]] ; then
+    jq -r --arg n "$n" '.[] | [$n,  "no", .name, .class, .result] | @csv' $i >> alltests.csv
+  else
+    jq -r --arg n "$n" '.[] | [$n, "yes", .name, .class, .result] | @csv' $i >> alltests.csv
+  fi
+done
+
+sed -i -e 's/_without_limits\.json//' alltests.csv
+sed -i -e 's/_with_limits\.json//' alltests.csv

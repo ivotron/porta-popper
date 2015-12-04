@@ -68,6 +68,7 @@
   - name: fetch parameter files to introspect
     fetch: src=/tmp/porta/parameters.json dest=parameters/{{ inventory_hostname }}.json flat=yes
     when:
+    - not skip_tuning|bool
     - inventory_hostname in groups.targets
 
 # execute test benchmarks
@@ -75,20 +76,25 @@
     command: docker pull {{ item }}
     with_items: benchmarks
   - name: execute testing benchmarks without limits
-    shell: docker run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_no_limits.json chdir=/tmp/porta
+    shell: docker run --rm --memory=4G --memory-swap=4G --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_without_limits.json chdir=/tmp/porta
     with_items: benchmarks
     when:
     - inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_tests_on_base|bool)
   - name: execute testing benchmarks with limits
-    shell: ./porta run --rm --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_limits.json chdir=/tmp/porta
+    shell: ./porta run --rm --memory=4G --memory-swap=4G --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_with_limits.json chdir=/tmp/porta
     with_items: benchmarks
     when:
     - inventory_hostname in groups.targets
   - name: merge outputs without limits
-    shell: jq -s add /tmp/porta/tests/*_no_limits.json > /tmp/porta/tests_no_limits.json
+    shell: jq -s add /tmp/porta/tests/*_without_limits.json > /tmp/porta/tests_without_limits.json
   - name: merge outputs with limits
-    shell: jq -s add /tmp/porta/tests/*_limits.json > /tmp/porta/tests_limits.json
+    shell: jq -s add /tmp/porta/tests/*_with_limits.json > /tmp/porta/tests_with_limits.json
+    when:
+    - inventory_hostname in groups.targets
   - name: fetch without limits results
-    fetch: src=/tmp/porta/tests_no_limits.json dest=tests/{{ inventory_hostname }}_no_limits.json flat=yes
+    fetch: src=/tmp/porta/tests_without_limits.json dest=tests/{{ inventory_hostname }}_without_limits.json flat=yes
   - name: fetch with limits results
-    fetch: src=/tmp/porta/tests_limits.json dest=tests/{{ inventory_hostname }}_limits.json flat=yes
+    fetch: src=/tmp/porta/tests_with_limits.json dest=tests/{{ inventory_hostname }}_with_limits.json flat=yes
+  - name: merge results
+    local_action: command ./merge_results
+    sudo: false
