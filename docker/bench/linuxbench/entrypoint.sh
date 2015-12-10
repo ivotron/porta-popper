@@ -67,3 +67,4 @@ jq --slurp --raw-input --raw-output \
            "class": "system",
            "result": .[1]})' \
   /tmp/out
+
