@@ -1,5 +1,10 @@
 #!/bin/bash
 
+args=$@
+
+# get the image name (assuming it's the last argument)
+for image; do true; done
+
 # TODO check jq, docker and gcc versions
 
 # get name of container
@@ -8,26 +13,21 @@ while test $# -gt 0; do
   case "$1" in
     --name)
       shift
-      if test $# -gt 0; then
-        export CONTAINER_NAME=$1
-      else
-        echo "no container name specified"
-        exit 1
-      fi
+      CONTAINER_NAME=$1
       shift
       ;;
     *)
-      break
+      shift
       ;;
   esac
 done
 
-if [ -z $CONTAINER_NAME ] ; then
+if [ -z "$CONTAINER_NAME" ] ; then
   echo "expecting --name flag"
   exit 1
 fi
 
-jq --version
+jq --version &> /dev/null
 if [ $? -ne 0 ] ; then
   echo "Unable to invoke jq"
   exit 1
@@ -53,39 +53,55 @@ fi
 
 cd $cwd
 
+# pull image explicitly
+docker pull $image &> /dev/null
+
 # check dependencies are available in the container
-for cmd in "gcc g++ make" ; do
-  docker run --rm --entrypoint=/bin/bash $@ $cmd -v &> /dev/null
+for cmd in gcc g++ make ; do
+  docker run --rm --entrypoint=/bin/bash $image -c "$cmd -v" &> /dev/null
   if [ $? -ne 0 ] ; then
     echo "Unable to find $cmd in given container"
     exit 1
   fi
+done
 
 # get the entrypoint of the container
-ep=`docker inspect $image | jq ' .[] | .ContainerConfig.Entrypoint[] '`
+ep=`docker inspect $image | jq -r ' .[] | .ContainerConfig.Entrypoint[] '`
 if [ $? -ne 0 ] ; then
   echo "Unable to inspect $image ENTRYPOINT"
   exit 1
 fi
 
 # get the working directory
-wd=`docker inspect $image | jq ' .[] | .ContainerConfig.WorkingDir '`
+wd=`docker inspect $image | jq -r ' .[] | .ContainerConfig.WorkingDir '`
 if [ $? -ne 0 ] ; then
   echo "Unable to inspect $image for WORKDIR"
   exit 1
+fi
+if [ "$wd" == "" ] ; then
+  wd="/"
 fi
 
 docker run --rm \
   -v `pwd`/entrypoint_for_profiling.sh:/root/entrypoint_for_profiling.sh \
   -v `pwd`/pin:/pin \
   -e ORIGINAL_ENTRYPOINT=$ep \
-  -e ORIGINAL_WORKDIR=$wd
+  -e ORIGINAL_WORKDIR=$wd \
+  --privileged \
   --entrypoint=/root/entrypoint_for_profiling.sh \
-  $@
+  $args &> /tmp/error
+
+if [ $? -ne 0 ] ; then
+  echo "Error while executing $image"
+  echo "entrypoint: $ep"
+  echo "workdir: $wd"
+  cat /tmp/error
+  exit 1
+fi
 
 if [ ! -f output.csv ] ; then
   csvheader="container,"
-  csvheader="instruction_cnt,"
+  csvheader+="instruction_cnt,"
   csvheader+="ilp_cycle_count_win_size_32,"
   csvheader+="ilp_cycle_count_win_size_64,"
   csvheader+="ilp_cycle_count_win_size_128,"
@@ -183,16 +199,17 @@ if [ ! -f output.csv ] ; then
   echo $csvheader > output.csv
 fi
 
-printf $CONTAINER_NAME >> output.csv
+printf "$CONTAINER_NAME," >> output.csv
 
-# check that there's only one file for each type of analysis
-for atype in "ilp itypes ppm reg stride memfootprint memreusedist" ; do
+for atype in ilp itypes ppm reg stride memfootprint memreusedist ; do
+  # check that there's only one file for each type of analysis
   numfiles=`ls pin/source/tools/mica/${atype}_full_int_*.out | wc -l`
   if [ $numfiles -ne 1 ] ; then
-    echo "expecting 1 file for ilp"
+    echo "expecting 1 file for $CONTAINER_NAME"
   fi
+  file=`ls pin/source/tools/mica/${atype}_full_int_*.out`
 
-  line=$(head -n 1 ilp_full_int_*.out)
+  line=$(head -n 1 $file)
   line=`echo $line | sed 's/ /,/g'`
 
   printf "$line" >> output.csv

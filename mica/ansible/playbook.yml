@@ -7,12 +7,11 @@
       that:
       - "ansible_distribution == 'Ubuntu'"
       - "ansible_lsb.major_release|int >= 12"
-      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel)"
+      - "ansible_kernel | version_compare('4.0', '<')"
       - "benchmarks is defined"
   - name: alter grub file to allow swap limits
     lineinfile:
       dest: /etc/default/grub
-      regexp: "^GRUB_CMDLINE_LINUX_DEFAULT="
       line: 'GRUB_CMDLINE_LINUX_DEFAULT="cgroup_enable=memory swapaccount=1"'
     register: grubfile
   - name: update grub
@@ -27,6 +26,7 @@
   - name: waiting for server to come back
     local_action: wait_for host={{ inventory_hostname }} state=started
     sudo: false
+    when: grubfile|changed
 
   roles:
   - role: angstwad.docker_ubuntu
@@ -51,4 +51,4 @@
     command: ./profile {{ item }} chdir=/tmp/mica
     with_items: benchmarks
   - name: retrieve profiles
-    fetch: src=output.csv dest=output.csv mode=0644
+    fetch: src=/tmp/mica/output.csv dest=output.csv mode=0644
