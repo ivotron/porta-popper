@@ -1,29 +1,33 @@
 #!/bin/bash
 
-args=$@
+usage() { echo "Usage: $0 -i <image> -f <run-flags> -c <command> -n <name>]" 1>&2; exit 1; }
 
-# get the image name (assuming it's the last argument)
-for image; do true; done
-
-# TODO check jq, docker and gcc versions
-
-# get name of container
-CONTAINER_NAME=""
-while test $# -gt 0; do
-  case "$1" in
-    --name)
-      shift
-      CONTAINER_NAME=$1
-      shift
+while getopts ":f:i:n:c:" o; do
+  case "${o}" in
+    i)
+      image=${OPTARG}
+      ;;
+    n)
+      name=${OPTARG}
+      ;;
+    f)
+      flags=${OPTARG}
+      ;;
+    c)
+      cmd=${OPTARG}
       ;;
     *)
-      shift
+      usage
       ;;
   esac
 done
+shift $((OPTIND-1))
 
-if [ -z "$CONTAINER_NAME" ] ; then
-  echo "expecting --name flag"
+# TODO check versions for all dependencies
+
+docker info &> /dev/null
+if [ $? -ne 0 ] ; then
+  echo "Unable to invoke docker"
   exit 1
 fi
 
@@ -49,6 +53,7 @@ if [ ! -d `pwd`/pin/source/tools/mica ] ; then
   cd pin/source/tools/mica
   cp mica.conf.example mica.conf
   sed -i -e 's/ilp_one/all/' mica.conf
+  sed -i -e 's/itypes_spec_file.*/itypes_spec_file: \/pin\/source\/tools\/mica\/itypes_default.spec/' mica.conf
 fi
 
 cd $cwd
@@ -56,51 +61,36 @@ cd $cwd
 # pull image explicitly
 docker pull $image &> /dev/null
 
-# check dependencies are available in the container
-for cmd in gcc g++ make ; do
-  docker run --rm --entrypoint=/bin/bash $image -c "$cmd -v" &> /dev/null
+# check for dependencies inside container
+for p in gcc g++ make ; do
+  docker run --rm --entrypoint=/bin/bash $image -c "$p -v" &> /dev/null
   if [ $? -ne 0 ] ; then
-    echo "Unable to find $cmd in given container"
+    echo "Unable to find $p in given container"
     exit 1
   fi
 done
 
-# get the entrypoint of the container
-ep=`docker inspect $image | jq -r ' .[] | .ContainerConfig.Entrypoint[] '`
-if [ $? -ne 0 ] ; then
-  echo "Unable to inspect $image ENTRYPOINT"
-  exit 1
-fi
+docker kill $name &> /dev/null
+docker rm $name &> /dev/null
 
-# get the working directory
-wd=`docker inspect $image | jq -r ' .[] | .ContainerConfig.WorkingDir '`
-if [ $? -ne 0 ] ; then
-  echo "Unable to inspect $image for WORKDIR"
-  exit 1
-fi
-if [ "$wd" == "" ] ; then
-  wd="/"
-fi
+echo "profiling $name"
 
 docker run --rm \
   -v `pwd`/entrypoint_for_profiling.sh:/root/entrypoint_for_profiling.sh \
   -v `pwd`/pin:/pin \
-  -e ORIGINAL_ENTRYPOINT=$ep \
-  -e ORIGINAL_WORKDIR=$wd \
+  -e CMD=$cmd \
   --privileged \
   --entrypoint=/root/entrypoint_for_profiling.sh \
-  $args &> /tmp/error
+  $flags $image &> /tmp/error
 
 if [ $? -ne 0 ] ; then
-  echo "Error while executing $image"
-  echo "entrypoint: $ep"
-  echo "workdir: $wd"
+  echo "Error while executing $flags $image $cmd"
   cat /tmp/error
   exit 1
 fi
 
 if [ ! -f output.csv ] ; then
-  csvheader="container,"
+  csvheader="container,process,"
   csvheader+="instruction_cnt,"
   csvheader+="ilp_cycle_count_win_size_32,"
   csvheader+="ilp_cycle_count_win_size_64,"
@@ -199,20 +189,23 @@ if [ ! -f output.csv ] ; then
   echo $csvheader > output.csv
 fi
 
-printf "$CONTAINER_NAME," >> output.csv
+# get number of processes (by getting the num of files that got generated)
+num_procs=`ls pin/source/tools/mica/ilp_full_int_*.out | wc -l`
 
-for atype in ilp itypes ppm reg stride memfootprint memreusedist ; do
-  # check that there's only one file for each type of analysis
-  numfiles=`ls pin/source/tools/mica/${atype}_full_int_*.out | wc -l`
-  if [ $numfiles -ne 1 ] ; then
-    echo "expecting 1 file for $CONTAINER_NAME"
-  fi
-  file=`ls pin/source/tools/mica/${atype}_full_int_*.out`
+echo "" > ${name}.tsv
+for p in `seq 0 $((num_procs-1))` ; do
+  printf "${name},${p}," >> output.csv
+  printf "process: $p" >> ${name}.tsv
 
-  line=$(head -n 1 $file)
-  line=`echo $line | sed 's/ /,/g'`
+  for atype in ilp itypes ppm reg stride memfootprint memreusedist ; do
+    files=`ls pin/source/tools/mica/${atype}_full_int_*.out`
+    file=${files[$p]}
 
-  printf "$line" >> output.csv
+    line=$(head -n 1 $file)
+    line=`echo $line | sed 's/ /,/g'`
+
+    printf "$line" >> output.csv
+    cat $file >> ${name}.tsv
+  done
+  printf "\n" >> output.csv
 done
-
-printf "\n" >> output.csv

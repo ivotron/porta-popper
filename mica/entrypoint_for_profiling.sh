@@ -9,8 +9,9 @@ make
 rm -f *.out
 
 # analyze
-../../../pin \
-  -t mica.so -- sh -c "cd $ORIGINAL_WORKDIR && $ORIGINAL_ENTRYPOINT"
+LD_LIBRARY_PATH=`pwd` ../../../pin \
+  -follow_execv \
+  -t mica.so -- sh -c "$CMD"
 
-# copy output
-cp $ORIGINAL_WORKDIR/*.out .
+# copy generated output
+find / -name *pin.out | xargs cp -t .
