@@ -1,13 +1,8 @@
-*.sw?
-base.json
-parameters.json
 .ropeproject
-ansible/parameters
-ansible/tests
-ansible/tests.json
 ansible/roles/
 mica/ansible/pin
 mica/ansible/roles/
+mica/pin
 .snapshots
 ansible/.ipynb_checkpoints/
 ansible/nbextensions/
