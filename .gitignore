@@ -11,3 +11,6 @@ mica/ansible/roles/
 .snapshots
 ansible/.ipynb_checkpoints/
 ansible/nbextensions/
+ansible/alltests.csv
+ansible/inventory
+ansible/target.json

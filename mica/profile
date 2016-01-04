@@ -1,8 +1,8 @@
 #!/bin/bash
 
-usage() { echo "Usage: $0 -i <image> -f <run-flags> -c <command> -n <name>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -i <image> -f <run-flags> -c <command> -n <name> -p <pre-command> -w <workdir>]" 1>&2; exit 1; }
 
-while getopts ":f:i:n:c:" o; do
+while getopts ":f:i:n:c:p:w:" o; do
   case "${o}" in
     i)
       image=${OPTARG}
@@ -16,12 +16,30 @@ while getopts ":f:i:n:c:" o; do
     c)
       cmd=${OPTARG}
       ;;
+    p)
+      pre=${OPTARG}
+      ;;
+    w)
+      workdir=${OPTARG}
+      ;;
     *)
       usage
       ;;
   esac
 done
 shift $((OPTIND-1))
+
+if [ -z "$image" ] ; then
+  echo "Expecting image name in -i"
+  exit 1
+fi
+if [ -z "$cmd" ] ; then
+  echo "Expecting command with -c"
+  exit 1
+fi
+if [ -z "$workdir" ] ; then
+  workdir="/"
+fi
 
 # TODO check versions for all dependencies
 
@@ -78,13 +96,15 @@ echo "profiling $name"
 docker run --rm \
   -v `pwd`/entrypoint_for_profiling.sh:/root/entrypoint_for_profiling.sh \
   -v `pwd`/pin:/pin \
-  -e CMD=$cmd \
+  -e PRE="$pre" \
+  -e CMD="$cmd" \
+  --workdir="$workdir" \
   --privileged \
   --entrypoint=/root/entrypoint_for_profiling.sh \
   $flags $image &> /tmp/error
 
 if [ $? -ne 0 ] ; then
-  echo "Error while executing $flags $image $cmd"
+  echo "Error while executing $image"
   cat /tmp/error
   exit 1
 fi
@@ -199,7 +219,7 @@ for p in `seq 0 $((num_procs-1))` ; do
 
   for atype in ilp itypes ppm reg stride memfootprint memreusedist ; do
     files=`ls pin/source/tools/mica/${atype}_full_int_*.out`
-    file=${files[$p]}
+    file="${files[$((p))]}"
 
     line=$(head -n 1 $file)
     line=`echo $line | sed 's/ /,/g'`
