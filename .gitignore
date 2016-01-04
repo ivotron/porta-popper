@@ -6,6 +6,7 @@ ansible/parameters
 ansible/tests
 ansible/tests.json
 ansible/roles/
+mica/pin
 mica/ansible/pin
 mica/ansible/roles/
 .snapshots

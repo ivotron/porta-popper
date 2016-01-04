@@ -1,6 +1,6 @@
 #!/bin/bash
 
-usage() { echo "Usage: $0 -i <image> -f <run-flags> -c <command> -n <name> -p <pre-command> -w <workdir>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -i <image> -f <run-flags> -c <command> -n <name> -p <pre-command> ]" 1>&2; exit 1; }
 
 while getopts ":f:i:n:c:p:w:" o; do
   case "${o}" in
@@ -19,9 +19,6 @@ while getopts ":f:i:n:c:p:w:" o; do
     p)
       pre=${OPTARG}
       ;;
-    w)
-      workdir=${OPTARG}
-      ;;
     *)
       usage
       ;;
@@ -36,9 +33,6 @@ fi
 if [ -z "$cmd" ] ; then
   echo "Expecting command with -c"
   exit 1
-fi
-if [ -z "$workdir" ] ; then
-  workdir="/"
 fi
 
 # TODO check versions for all dependencies
@@ -98,7 +92,6 @@ docker run --rm \
   -v `pwd`/pin:/pin \
   -e PRE="$pre" \
   -e CMD="$cmd" \
-  --workdir="$workdir" \
   --privileged \
   --entrypoint=/root/entrypoint_for_profiling.sh \
   $flags $image &> /tmp/error

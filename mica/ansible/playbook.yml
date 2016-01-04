@@ -39,7 +39,7 @@
   - name: install jq
     apt: name=jq state=present
   - name: create folders
-    file: path=/tmp/mica/tests state=directory mode=0755
+    file: path=/tmp/mica state=directory mode=0755
   - name: send mica files
     copy: src={{ item }} dest=/tmp/mica/{{ item }} mode=0755
     with_items:
