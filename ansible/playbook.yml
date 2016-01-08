@@ -98,3 +98,7 @@
   - name: merge results
     local_action: command ./merge_results
     sudo: false
+  - name: obtain normalized results
+    local_action: command docker run --rm -v `pwd`:/data --entrypoint=/data/normalize.py ivotron/jupyter-pd-mpl-h5 {{ item }}
+    sudo: false
+    with_items: groups.base
