@@ -1,29 +1,29 @@
 - hosts: all
   vars:
     install_docker: no
-
+    exp_folder: "/var/experiments/porta"
   pre_tasks:
   - name: Assert preconditions
     assert:
       that:
+      - "ansible_distribution == 'Ubuntu'"
+      - "ansible_lsb.major_release|int >= 12"
+      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel)"
       - "benchmarks is defined"
       - "mem_quotas is defined"
-      - "cpu_periods is defined"
       - "cpu_quotas is defined"
-
-  roles:
-  - requirements
+      - "cpu_periods is defined"
 
   tasks:
   - name: delete previous results
-    file: path=/tmp/porta/ state=absent
+    file: path={{ exp_folder }} state=absent
   - name: create results folder
-    file: path=/tmp/porta/tests state=directory mode=0755
+    file: path={{ exp_folder }}/tests state=directory mode=0755
   - name: send cadvisor/influxdb compose file
-    copy: src=../docker/cadvisor/docker-compose.yml dest=/tmp/porta/docker-compose.yml mode=0755
+    copy: src=docker-compose.yml dest={{ exp_folder }}/docker-compose.yml mode=0755
 
   - name: start cadvisor
-    command: docker-compose up --force-recreate -d chdir=/tmp/porta
+    command: docker-compose up --force-recreate -d chdir={{ exp_folder }}
 
   - name: pull porta image
     command: docker pull ivotron/porta
@@ -31,23 +31,22 @@
     command: docker pull {{ item }}
     with_items: benchmarks
   - name: run benchmarks
-
-    shell: docker run --rm --privileged --entrypoint=/usr/bin/docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock {{ item[0] }} --name {{ item[3] }}_{{ item[0] }}_{{ item[1] }}_{{ item[2] }} --cpu-period={{ item[1] }} --cpu-quota={{ item[2] }} --rm --cpuset-cpus=0 --memory=512M --memory-swap=512M {{ item[3] }} > tests/{{ item[3] }}_{{ item[0] }}_{{ item[1] }}_{{ item[2] }}.json chdir=/tmp/porta
-    with_items:
-    - {{ mem_quotas }}
-    - {{ cpu_periods }}
-    - {{ cpu_quotas }}
-    - {{ benchmarks }}
+    shell: docker run --rm --privileged --entrypoint=docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock ivotron/porta {{ item[1] }} --name {{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }} --cpu-period={{ item[3] }} --cpu-quota={{ item[2] }} --rm --cpuset-cpus=0 --memory=512M --memory-swap=512M {{ item[0] }} > tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}.json chdir={{ exp_folder }}
+    with_nested:
+    - benchmarks
+    - mem_quotas
+    - cpu_quotas
+    - cpu_periods
 
   - name: stop cadvisor
-    command: docker-compose stop
+    command: docker-compose stop chdir={{ exp_folder }}
   - name: compress influxdb data
-    command: tar cvfj influxdb.bz2 influxdb chdir=/tmp/porta
+    command: tar cvfj influxdb.bz2 influxdb chdir={{ exp_folder }}
   - name: compress tests folder
-    command: tar cvfj tests.bz2 tests chdir=/tmp/porta
+    command: tar cvfj tests.bz2 tests chdir={{ exp_folder }}
 
 # get results
   - name: get influxdb data
-    fetch: src=/tmp/porta/influxdb.bz2 dest=influxdb.bz2
+    fetch: src={{ exp_folder }}/influxdb.bz2 dest=influxdb.bz2
   - name: get tests data
-    fetch: src=/tmp/porta/tests.bz2 dest=tests.bz2
+    fetch: src={{ exp_folder }}/tests.bz2 dest=tests.bz2
