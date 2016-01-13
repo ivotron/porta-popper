@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo "container,mem_quota,cpu_quota,cpu_period,benchmark,class,result" > alltests.csv
+
+for f in tests/* ; do
+  n=`basename $f`
+  container=`echo $n | sed -n 's/\(.*\)_.*_.*_.*/\1/p'`
+  mem_quota=`echo $n | sed -n 's/.*_\(.*\)_.*_.*/\1/p'`
+  cpu_quota=`echo $n | sed -n 's/.*_.*_\(.*\)_.*/\1/p'`
+  cpu_period=`echo $n | sed -n 's/.*_.*_.*_\(.*\)/\1/p'`
+  jq -r --arg n $n --arg c $container --arg m $mem_quota --arg q $cpu_quota --arg p $cpu_period '.[] | [$c, $m, $q, $p, .name, .class, .result] | @csv' $f >> alltests.csv
+done
+
+sed -i -e 's/\.json//' alltests.csv
