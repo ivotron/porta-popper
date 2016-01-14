@@ -1,20 +1,26 @@
 #!/bin/bash
 #
 # This wraps docker so that we can limit memory bandwidth with memguard. The 
-# script takes 1 argument, the memory bandwidth limit, plus any other argument 
-# passed to docker run. For example:
+# script takes 2 memguard-specific arguments (which control memory bandwidth 
+# behavior) plus any other argument passed to `docker run`. The arguments are:
 #
-#   docker-run-wrapper 1000 --cpuset-cpus=0 --rm some/image --img-arguments
+#   docker-run <period-us> <mbs-for-core0> <docker-run-args>
 #
-# The above instantiates a container for some/image with 1000 MB/s of memory 
-# bandwidth on CPU core 0.
+# For example:
+#
+#   docker-run 10000 400 --cpuset-cpus=0 --rm some/image --img-arguments
+#
+# The above instantiates a container for some/image with scheduling period of 
+# 10000 microseconds and 400 MB/s of memory bandwidth for core 0.
 #
 # Prerequisites:
+#
 #  - linux-headers for `uname -r` (i.e. the version of the host kernel)
 #
 # WARNING: when the memguard module is loaded, the entire host observes its 
 # effects. For this reason, we only modify the bandwidth for the first core of 
-# the host.
+# the host. Thus, while the instantiated container may make use of any core, the 
+# effects of throttling will only be observed for core 0.
 #
 # NOTE: if running this script within a container, the following must be passed 
 # to 'docker run' invocation corresponding to the container that executes 
@@ -35,10 +41,14 @@
 #
 # if the daemon is not exposed via tcp.
 
-# check that first argument is numeric
+# check that first two arguments are numeric
 re='^[0-9]+$'
 if ! [[ $1 =~ $re ]] ; then
   echo "ERROR: $1 not a number" >&2
+  exit 1
+fi
+if ! [[ $2 =~ $re ]] ; then
+  echo "ERROR: $2 not a number" >&2
   exit 1
 fi
 
@@ -54,20 +64,18 @@ make &> /dev/null
 if [ $? -ne 0 ] ; then
   exit 1
 fi
-insmod $MEMGUARD_PATH/memguard.ko &> /dev/null
+PERIOD_US=$1 . ./functions
+do_init_common "" "" 0 "" 0 "$2"
 if [ $? -ne 0 ] ; then
+  echo "Error initializing memguard module"
   exit 1
 fi
-
-# set bandwidth limit for core 0
-echo mb $1 > /sys/kernel/debug/memguard/limit
-echo maxbw 2000 > /sys/kernel/debug/memguard/control
 
 # execute docker
-docker run "${@:2}"
+docker run "${@:3}"
 if [ $? -ne 0 ] ; then
   exit 1
 fi
 
-# unload memguard (if previously loaded)
+# unload memguard
 rmmod memguard &> /dev/null
