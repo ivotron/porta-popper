@@ -1,9 +1,9 @@
 FROM debian:jessie
 
 RUN apt-get update && \
-    apt-get install -y wget build-essential && \
+    apt-get install -y wget g++ gcc make && \
     cd / && \
-    wget --no-check-certificate https://github.com/heechul/memguard/tarball/f671ad2f8a5aeec07d3db9e1930fc5c3abadecc3 -O - | tar xz && \
+    wget --no-check-certificate https://github.com/heechul/memguard/tarball/a97723dade4246b159badee7764b33ea86bb4c29 -O - | tar xz && \
     mv heechul* memguard
 
 RUN sed -i 's/local codebase.*//' /memguard/functions

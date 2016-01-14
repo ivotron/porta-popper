@@ -65,7 +65,7 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 PERIOD_US=$1 . ./functions
-do_init_common "" "" 0 "" 0 "$2"
+PERIOD_US=$1 do_init_common "" "" 0 "" 0 "$2"
 if [ $? -ne 0 ] ; then
   echo "Error initializing memguard module"
   exit 1
