@@ -102,3 +102,12 @@
     local_action: command docker run --rm -v `pwd`:/data --entrypoint=/data/normalize.py ivotron/jupyter-pd-mpl-h5 {{ item }}
     sudo: false
     with_items: groups.base
+
+# store facts
+  - name: create facts folder
+    local_action: file path=facts state=directory mode=0755
+    sudo: false
+  - name: store facts about remotes
+    local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    sudo: false
+    with_items: groups['all']

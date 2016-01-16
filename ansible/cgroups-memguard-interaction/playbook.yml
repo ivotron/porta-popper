@@ -83,5 +83,10 @@
     sudo: false
 
 # store facts
+  - name: create facts folder
+    local_action: file path=facts state=directory mode=0755
+    sudo: false
   - name: store facts about remotes
-    setup: --tree facts/
+    local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=facts/{{ item }}.json
+    sudo: false
+    with_items: groups['all']
