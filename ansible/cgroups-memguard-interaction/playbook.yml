@@ -1,52 +1,87 @@
 - hosts: all
   vars:
-    install_docker: no
-    exp_folder: "/var/experiments/porta"
+    exp_folder: "{{ ansible_env.HOME}}/experiments/memguard"
+    cadvisor_enabled: false
+    reps: [1]
   pre_tasks:
   - name: Assert preconditions
     assert:
       that:
-      - "ansible_distribution == 'Ubuntu'"
-      - "ansible_lsb.major_release|int >= 12"
-      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel)"
       - "benchmarks is defined"
-      - "mem_quotas is defined"
+      - "mem_bw is defined"
+      - "mem_periods is defined"
       - "cpu_quotas is defined"
       - "cpu_periods is defined"
+  - name: Get jq version
+    local_action: command jq --version
+    register: jq_version
+    sudo: false
+  - name: Check jq version
+    local_action: fail msg='Incorrect jq version (expecting 1.5)'
+    when: "'1.5' not in jq_version.stdout"
+    sudo: false
 
   tasks:
+
+# setup
   - name: delete previous results
     file: path={{ exp_folder }} state=absent
+    ignore_errors: true
   - name: create results folder
     file: path={{ exp_folder }}/tests state=directory mode=0755
   - name: send cadvisor/influxdb compose file
     copy: src=docker-compose.yml dest={{ exp_folder }}/docker-compose.yml mode=0755
-
+    when:
+    - cadvisor_enabled|bool
   - name: start cadvisor
     command: docker-compose up --force-recreate -d chdir={{ exp_folder }}
+    when:
+    - cadvisor_enabled|bool
 
-  - name: pull porta image
-    command: docker pull ivotron/porta
+# execute tests
+  - name: pull memguard image
+    command: docker pull ivotron/memguard
   - name: pull benchmark images
     command: docker pull {{ item }}
     with_items: benchmarks
   - name: run benchmarks
-    shell: docker run --rm --privileged --entrypoint=docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock ivotron/porta {{ item[1] }} --name {{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }} --cpu-period={{ item[3] }} --cpu-quota={{ item[2] }} --rm --cpuset-cpus=0 --memory=512M --memory-swap=512M {{ item[0] }} > tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}.json chdir={{ exp_folder }}
+    shell: docker run --rm --privileged --entrypoint=docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock ivotron/memguard {{ item[1] }} {{ item[2] }} -v {{ exp_folder }}:/mnt --name {{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }} --cpu-period={{ item[4] }} --cpu-quota={{ item[3] }} --rm --cpuset-cpus=0 --memory=512M --memory-swap=512M {{ item[0] }} > {{ exp_folder }}/tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }}.json
+    when:
+    - item[4] >= item[2]
     with_nested:
     - benchmarks
-    - mem_quotas
+    - mem_periods
+    - mem_bw
     - cpu_quotas
     - cpu_periods
+    - reps
 
+# stop data collection
   - name: stop cadvisor
     command: docker-compose stop chdir={{ exp_folder }}
+    when:
+    - cadvisor_enabled|bool
   - name: compress influxdb data
     command: tar cvfj influxdb.bz2 influxdb chdir={{ exp_folder }}
+    when:
+    - cadvisor_enabled|bool
   - name: compress tests folder
     command: tar cvfj tests.bz2 tests chdir={{ exp_folder }}
 
 # get results
   - name: get influxdb data
-    fetch: src={{ exp_folder }}/influxdb.bz2 dest=influxdb.bz2
+    fetch: src={{ exp_folder }}/influxdb.bz2 dest=influxdb.bz2 flat=yes
+    when:
+    - cadvisor_enabled|bool
   - name: get tests data
-    fetch: src={{ exp_folder }}/tests.bz2 dest=tests.bz2
+    fetch: src={{ exp_folder }}/tests.bz2 dest=tests.bz2 flat=yes
+  - name: untar results
+    local_action: command tar xvfj tests.bz2
+    sudo: false
+  - name: merge results
+    local_action: command ./merge_results
+    sudo: false
+
+# store facts
+  - name: store facts about remotes
+    setup: --tree facts/
