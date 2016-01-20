@@ -3,6 +3,7 @@
     mem: 512M
     period: 50000
     fldr: "{{ansible_env.HOME}}/var/porta/base-vs-limited-targets"
+    skip_base: true
   pre_tasks:
   - name: Assert preconditions
     assert:
@@ -21,28 +22,30 @@
   - name: delete previous results
     file: path={{fldr}} state=absent
     ignore_errors: true
-  - name: delete previous local results
-    local_action: file path=results state=absent
-    sudo: false
-    ignore_errors: true
   - name: install linux linux-headers
-    apt: name=linux-headers-{{ ansible_kernel }}
-  - name: create test folder inside porta
+    package: name=linux-headers-{{ ansible_kernel }} state=present
+  - name: install jq
+    package: name=jq state=latest
+  - name: create test folder
     file: path={{fldr}}/tests state=directory mode=0755
+  - name: create test folder locally
+    local_action: file path=tests state=directory mode=0755
+    sudo: false
   - name: send porta
     copy: src=porta dest={{fldr}} mode=0755
   - name: pull porta image
     command: docker pull ivotron/porta
 
-# send parameters
+# send parameters to targets
   - name: check if parameters.json file exists locally
     local_action: stat path="parameters/{{item}}.json"
+    register: "{{item}}_params.stat.exists"
     with_items: groups.targets
     sudo: false
-    register: "{{inventory_hostname}}_params.stat.exists"
-  - name: fail if file for remote doesn't exist
-    fail: "msg=Cannot find parameters file for {{inventory_hostname}}"
-    when: not "{{inventory_hostname}}_params.stat.exists"
+  - name: fail if file for there are no parameters for a target
+    local_action: fail "msg=Cannot find parameters file for {{item}}"
+    when: not "{{item}}_params.stat.exists and {{item}} in groups.targets"
+    with_items: groups.targets
   - name: Send parameters file
     copy: src=parameters/{{inventory_hostname}}.json dest={{fldr}}/parameters.json mode=0644
     when: inventory_hostname in groups.targets
@@ -52,39 +55,32 @@
     command: docker pull {{ item }}
     with_items: benchmarks
   - name: execute testing benchmarks without limits
-    shell: docker run --rm --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_without_limits.json chdir={{fldr}}
+    shell: docker run --rm --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > {{fldr}}/tests/{{ item.replace('/','_') }}_without_limits.json
     with_items: benchmarks
+    when: inventory_host in groups.targets or (inventory_host in groups.base and not skip_base|bool)
   - name: execute testing benchmarks with limits
-    shell: ./porta run --rm --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_with_limits.json chdir={{fldr}}
+    shell: ./porta run --rm --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > {{fldr}}/tests/{{ item.replace('/','_') }}_with_limits.json
     with_items: benchmarks
     when:
     - inventory_hostname in groups.targets
 
+# aggregate results into one file
+  - name: merge outputs with limits
+    command: jq -s add {{fldr}}/tests/*_with_limits.json > {{fldr}}/{{inventory_host}}_with_limits.json
+  - name: merge outputs without limits
+    command: jq -s add {{fldr}}/tests/*_without_limits.json > {{fldr}}/{{inventory_host}}_without_limits.json
+
 # fetch results
   - name: compress tests folder
     command: tar cvfj tests.bz2 tests chdir={{fldr}}
-  - name: mkdir for results
-    local_action: file path=results/{{item}} state=directory mode=0755
-    with_items: groups['all']
-    when: {{item}} != "localhost"
-    sudo: false
   - name: get result tar balls
-    fetch: src={{fldr}}/tests.bz2 dest=results/{{inventory_hostname}}/tests.bz2 flat=yes
-  - name: unarchive result tar balls
-    local_action: command tar xvfj tests.bz2 chdir=results/{{item}}
-    with_items: groups['all']
-    when: {{item}} != "localhost"
-    sudo: false
+    fetch: src={{fldr}}/tests.bz2 dest=tests/{{inventory_hostname}}_tests.bz2 flat=yes
+  - name: get results without limits
+    fetch: src={{fldr}}/*_with_limits.json dest=tests/{{inventory_hostname}}_with_limits.json
+  - name: get results without limits
+    fetch: src={{fldr}}/*_without_limits.json dest=tests/{{inventory_hostname}}_without_limits.json
 
-# postprocess
-  - name: merge outputs with limits
-    local_action: "command jq -s add results/{{item}}/tests/*_with_limits.json > results/{{item}}_with_limits.json"
-    with_items: groups.targets
-    sudo: false
-  - name: merge outputs without limits
-    local_action: "command jq -s add results/{{item}}/tests/*_without_limits.json > results/{{item}}_without_limits.json"
-    with_items: groups['all']
-    sudo: false
+# postprocess on localhost
   - name: merge results
     local_action: command ./merge_results
     sudo: false
@@ -92,6 +88,7 @@
     local_action: command docker run --rm -v `pwd`:/data --entrypoint=/data/normalize.py ivotron/jupyter-pd-mpl-h5 {{ item }}
     sudo: false
     with_items: groups.base
+    when: not skip_base|bool
 
 # store facts
   - name: create facts folder

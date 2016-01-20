@@ -154,7 +154,7 @@ class PortaTuner(MeasurementInterface):
                 IntegerParameter('cpu-quota', 5000, 50000))
         elif args.category == 'memory':
             manipulator.add_parameter(
-                IntegerParameter('mem-bw-limit', 100, 2000))
+                IntegerParameter('mem-bw-limit', 100, 250))
         else:
             raise Exception('Unknown benchmark class ' + args.category)
 

@@ -49,7 +49,7 @@
     command: docker pull {{ item }}
     with_items: benchmarks
   - name: run benchmarks
-    command: docker run --rm --privileged --entrypoint=docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock ivotron/memguard {{ item[1] }} {{ item[2] }} --name {{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }} --cpu-period={{ item[4] }} --cpu-quota={{ item[3] }} --rm --cpuset-cpus=0 --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} {{ item[0] }} > {{ exp_folder }}/tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }}.json
+    shell: docker run --rm --privileged --entrypoint=docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock ivotron/memguard {{ item[1] }} {{ item[2] }} --name {{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }} --cpu-period={{ item[4] }} --cpu-quota={{ item[3] }} --rm --cpuset-cpus=0 --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} {{ item[0] }} > {{ exp_folder }}/tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }}.json
     when:
     - item[4] > item[2]
     with_nested:

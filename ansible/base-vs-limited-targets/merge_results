@@ -2,7 +2,7 @@
 
 echo "machine,limits,benchmark,class,result" > alltests.csv
 
-for i in results/* ; do
+for i in tests/* ; do
   n=`basename $i`
   if [[ $n == *"_without_limits.json"* ]] ; then
     jq -r --arg n "$n" '.[] | [$n,  "no", .name, .class, .result] | @csv' $i >> alltests.csv

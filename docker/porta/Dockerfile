@@ -8,8 +8,7 @@ RUN apt-get update && \
     mv jansel* opentuner && \
     cd /opentuner && \
     apt-get install -y --no-install-recommends \
-      `cat debian-packages-deps | tr '\n' ' '` \
-      module-init-tools lxc && \
+      `cat debian-packages-deps | tr '\n' ' '`  && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     python ./venv-bootstrap.py
