@@ -1,0 +1,103 @@
+- hosts: all
+  vars:
+    mem: 512M
+    period: 50000
+    fldr: "{{ansible_env.HOME}}/var/porta"
+  pre_tasks:
+  - name: Assert preconditions
+    assert:
+      that:
+      - "ansible_distribution == 'Ubuntu'"
+      - "ansible_lsb.major_release|int >= 12"
+      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel)"
+      - "'base' in groups"
+      - "'targets' in groups"
+      - "groups.base|length == 1"
+      - "groups.targets|length > 0"
+      - "benchmarks is defined"
+
+  tasks:
+# setup
+  - name: delete previous results
+    file: path={{fldr}} state=absent
+    ignore_errors: true
+  - name: delete previous local results
+    local_action: file path=results state=absent
+    sudo: false
+    ignore_errors: true
+  - name: install linux linux-headers
+    apt: name=linux-headers-{{ ansible_kernel }}
+  - name: create test folder inside porta
+    file: path={{fldr}}/tests state=directory mode=0755
+  - name: send porta
+    copy: src=porta dest={{fldr}} mode=0755
+  - name: pull porta image
+    command: docker pull ivotron/porta
+
+# send parameters
+  - name: check if parameters.json file exists locally
+    local_action: stat path="parameters/{{item}}.json"
+    with_items: groups.targets
+    sudo: false
+    register: "{{inventory_hostname}}_params.stat.exists"
+  - name: fail if file for remote doesn't exist
+    fail: "msg=Cannot find parameters file for {{inventory_hostname}}"
+    when: not "{{inventory_hostname}}_params.stat.exists"
+  - name: Send parameters file
+    copy: src=parameters/{{inventory_hostname}}.json dest={{fldr}}/parameters.json mode=0644
+    when: inventory_hostname in groups.targets
+
+# execute test benchmarks
+  - name: pull benchmark images
+    command: docker pull {{ item }}
+    with_items: benchmarks
+  - name: execute testing benchmarks without limits
+    shell: docker run --rm --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_without_limits.json chdir={{fldr}}
+    with_items: benchmarks
+  - name: execute testing benchmarks with limits
+    shell: ./porta run --rm --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_with_limits.json chdir={{fldr}}
+    with_items: benchmarks
+    when:
+    - inventory_hostname in groups.targets
+
+# fetch results
+  - name: compress tests folder
+    command: tar cvfj tests.bz2 tests chdir={{fldr}}
+  - name: mkdir for results
+    local_action: file path=results/{{item}} state=directory mode=0755
+    with_items: groups['all']
+    when: {{item}} != "localhost"
+    sudo: false
+  - name: get result tar balls
+    fetch: src={{fldr}}/tests.bz2 dest=results/{{inventory_hostname}}/tests.bz2 flat=yes
+  - name: unarchive result tar balls
+    local_action: command tar xvfj tests.bz2 chdir=results/{{item}}
+    with_items: groups['all']
+    when: {{item}} != "localhost"
+    sudo: false
+
+# postprocess
+  - name: merge outputs with limits
+    local_action: "command jq -s add results/{{item}}/tests/*_with_limits.json > results/{{item}}_with_limits.json"
+    with_items: groups.targets
+    sudo: false
+  - name: merge outputs without limits
+    local_action: "command jq -s add results/{{item}}/tests/*_without_limits.json > results/{{item}}_without_limits.json"
+    with_items: groups['all']
+    sudo: false
+  - name: merge results
+    local_action: command ./merge_results
+    sudo: false
+  - name: obtain normalized results
+    local_action: command docker run --rm -v `pwd`:/data --entrypoint=/data/normalize.py ivotron/jupyter-pd-mpl-h5 {{ item }}
+    sudo: false
+    with_items: groups.base
+
+# store facts
+  - name: create facts folder
+    local_action: file path=facts state=directory mode=0755
+    sudo: false
+  - name: store facts about remotes
+    local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    sudo: false
+    with_items: groups['all']

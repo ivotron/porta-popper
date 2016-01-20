@@ -12,7 +12,7 @@ RUN apt-get update && \
       module-init-tools lxc && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
-    python ./venv-bootstrap.py && \
+    python ./venv-bootstrap.py
 
 ENV OPENTUNER_DIR /opentuner
 ENV PATH /opentuner/venv/bin/:$PATH

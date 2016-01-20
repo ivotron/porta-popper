@@ -1,0 +1,71 @@
+- hosts: all
+  vars:
+    fldr: "{{ansible_env.HOME}}/var/porta"
+  pre_tasks:
+  - name: Assert preconditions
+    assert:
+      that:
+      - "ansible_distribution == 'Ubuntu'"
+      - "ansible_lsb.major_release|int >= 12"
+      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel)"
+      - "'base' in groups"
+      - "'targets' in groups"
+      - "groups.base|length == 1"
+      - "groups.targets|length > 0"
+
+  tasks:
+
+# setup
+  - name: delete previous results
+    file: path={{fldr}} state=absent
+    ignore_errors: true
+  - name: install linux linux-headers
+    apt: name=linux-headers-{{ ansible_kernel }}
+  - name: create test folder inside porta
+    file: path={{fldr}}/tests state=directory mode=0755
+  - name: send porta
+    copy: src=porta dest={{fldr}} mode=0755
+  - name: pull porta image
+    command: docker pull ivotron/porta
+  - name: pull microbench image
+    command: docker pull ivotron/microbench
+
+# get the base metrics
+  - name: check if base.json file exists locally
+    local_action: stat path="base.json"
+    sudo: false
+    register: base_metrics
+    when: inventory_hostname in groups.base
+  - name: generate base.json
+    command: ./porta base chdir={{fldr}}
+    when:
+    - inventory_hostname in groups.base
+    - not base_metrics.stat.exists
+  - name: get base.json metrics for host in base group
+    fetch: src={{fldr}}/base.json dest=. flat=yes
+    when:
+    - inventory_hostname in groups.base
+    - not base_metrics.stat.exists
+
+# tune targets
+  - name: push base.json to targets
+    copy: src=base.json dest={{fldr}}/base.json mode=0644
+    when:
+    - inventory_hostname in groups.targets
+  - name: tune system
+    command: ./porta tune chdir={{fldr}}
+    when:
+    - inventory_hostname in groups.targets
+  - name: fetch parameter files to introspect
+    fetch: src={{fldr}}/parameters.json dest=parameters/{{ inventory_hostname }}.json flat=yes
+    when:
+    - inventory_hostname in groups.targets
+
+# store facts
+  - name: create facts folder
+    local_action: file path=facts state=directory mode=0755
+    sudo: false
+  - name: store facts about remotes
+    local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    sudo: false
+    with_items: groups['all']

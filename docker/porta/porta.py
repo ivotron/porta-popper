@@ -12,7 +12,6 @@ import argparse
 import json
 import subprocess
 import logging
-
 import opentuner
 from opentuner import ConfigurationManipulator
 from opentuner import IntegerParameter
@@ -39,6 +38,8 @@ parser.add_argument('--benchmarks',
                     nargs='+', help='benchmarks to execute')
 parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
+parser.add_argument('--cpuquota', default='',
+                    help="For other-than-cpu categories, this must be given")
 # internal arguments
 parser.add_argument('--category', help=argparse.SUPPRESS)
 parser.add_argument('--base-data', type=json.loads, help=argparse.SUPPRESS)
@@ -119,18 +120,24 @@ def get_cmd_for_class(category, benchmarks, cfg):
         return ('docker run '
                 ' --cpuset-cpus=0'
                 ' --cpu-quota={}'
+                ' --cpu-period={}'
                 ' -e BENCHMARKS="{}"'
                 ' --rm'
                 ' ivotron/microbench').format(
-                    cfg['cpu-quota'],
+                    cfg['cpu-quota'], "50000",
                     ' '.join(benchmarks))
     elif category == 'memory':
-        return ('docker-run-wrapper {}'
+        if args.cpuquota is None:
+            raise Exception("Expecting value for cpuquota")
+
+        return ('docker-run-wrapper {} {}'
                 ' --cpuset-cpus=0'
+                ' --cpu-quota={}'
+                ' --cpu-period={}'
                 ' -e BENCHMARKS="{}"'
                 ' --rm'
                 ' ivotron/microbench').format(
-                    cfg['mem-bw-limit'],
+                    "1000", cfg['mem-bw-limit'], args.cpuquota, "50000",
                     ' '.join(benchmarks))
 
 
@@ -144,10 +151,10 @@ class PortaTuner(MeasurementInterface):
 
         if args.category == 'processor':
             manipulator.add_parameter(
-                IntegerParameter('cpu-quota', 5000, 100000))
+                IntegerParameter('cpu-quota', 5000, 50000))
         elif args.category == 'memory':
             manipulator.add_parameter(
-                IntegerParameter('mem-bw-limit', 10, 350))
+                IntegerParameter('mem-bw-limit', 100, 2000))
         else:
             raise Exception('Unknown benchmark class ' + args.category)
 
@@ -168,13 +175,29 @@ class PortaTuner(MeasurementInterface):
 
         docker_cmd = get_cmd_for_class(self.args.category, benchs, cfg)
 
-        result = self.call_program(docker_cmd)
-        if result['returncode'] != 0:
-            raise Exception(
-                'Non-zero exit code:\n{}\nstdout:\n{}\nstderr:\n{}'.format(
-                    docker_cmd, str(result['stdout']), str(result['stderr'])))
+        has_incomplete_results = True
 
-        target_data = json.loads(result['stdout'])
+        while has_incomplete_results:
+            result = self.call_program(docker_cmd)
+            if result['returncode'] != 0:
+                raise Exception(
+                    'Non-zero exit code:\n{}\nstdout:\n{}\nstderr:\n{}'.format(
+                        docker_cmd, str(result['stdout']),
+                        str(result['stderr'])))
+
+            target_data = json.loads(result['stdout'])
+
+            # check that we got results for all benchmarks, otherwise re-run
+            try:
+                for bench_name in benchs:
+                    get_result(target_data, bench_name)
+            except Exception, e:
+                if "Can't find result for benchmark" in str(e):
+                    raise
+                # let's try again
+                continue
+
+            has_incomplete_results = False
 
         count = 0
         speedup_sum = 0.0
@@ -203,6 +226,8 @@ class PortaTuner(MeasurementInterface):
         '''
         called at the end with best resultsdb.models.Configuration
         '''
+        if args.category == 'processor':
+            args.cpuquota = configuration.data['cpu-quota']
         self.args.outjson.update(configuration.data)
 
 if __name__ == '__main__':

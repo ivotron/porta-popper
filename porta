@@ -19,6 +19,10 @@ case $1 in
     ;;
   "tune")
     echo "" > parameters.json
+    if [ ! -f base.json ] ; then
+      echo "Cannot find base.json file"
+      exit 1
+    fi
     docker run \
       --rm \
       --privileged \
@@ -32,6 +36,10 @@ case $1 in
          ivotron/porta --parallelism 1 --test-limit 20 --technique MonotonicSearch --bail-threshold 1 --action $@
     ;;
   "run")
+    if [ ! -f parameters.json ] ; then
+      echo "Cannot find parameters.json file"
+      exit 1
+    fi
     docker run \
       --rm \
       --privileged \
