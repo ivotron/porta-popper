@@ -3,6 +3,8 @@
     exp_folder: "{{ ansible_env.HOME}}/var/porta/cgroups-memguard-interaction"
     cadvisor_enabled: false
     reps: [1]
+    mem: 512M
+    period: 50000
   pre_tasks:
   - name: Assert preconditions
     assert:
@@ -24,13 +26,13 @@
   tasks:
 
 # setup
+  - name: install linux linux-headers
+    package: name=linux-headers-{{ ansible_kernel }} state=present
   - name: delete previous results
     file: path={{ exp_folder }} state=absent
     ignore_errors: true
   - name: create results folder
     file: path={{ exp_folder }}/tests state=directory mode=0755
-  - name: send porta
-    copy: src=porta dest={{fldr}} mode=0755
   - name: send cadvisor/influxdb compose file
     copy: src=docker-compose.yml dest={{ exp_folder }}/docker-compose.yml mode=0755
     when:
@@ -41,13 +43,13 @@
     - cadvisor_enabled|bool
 
 # execute tests
-  - name: pull porta image
-    command: docker pull ivotron/porta
+  - name: pull memguard image
+    command: docker pull ivotron/memguard
   - name: pull benchmark images
     command: docker pull {{ item }}
     with_items: benchmarks
   - name: run benchmarks
-    command: ./porta run {{ item[1] }} {{ item[2] }} -v {{ exp_folder }}:/mnt --cpu-quota={{ item[3] }} --cpu-period={{ item[4] }} --rm --cpuset-cpus=0 --memory=512M --memory-swap=512M {{ item[0] }} > {{ exp_folder }}/tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }}.json
+    command: docker run --rm --privileged --entrypoint=docker-run-wrapper -v /sys/kernel/debug:/sys/kernel/debug -v /usr/src:/usr/src -v /lib/modules:/lib/modules -v `which docker`:/usr/bin/docker -v /var/run/docker.sock:/var/run/docker.sock ivotron/memguard {{ item[1] }} {{ item[2] }} --name {{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }} --cpu-period={{ item[4] }} --cpu-quota={{ item[3] }} --rm --cpuset-cpus=0 --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} {{ item[0] }} > {{ exp_folder }}/tests/{{ item[0].replace('/','.') }}_{{ item[1] }}_{{ item[2] }}_{{ item[3] }}_{{ item[4] }}_{{ item[5] }}.json
     when:
     - item[4] > item[2]
     with_nested:

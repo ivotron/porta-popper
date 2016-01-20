@@ -64,8 +64,8 @@ make &> /dev/null
 if [ $? -ne 0 ] ; then
   exit 1
 fi
-PERIOD_US=$1 . ./functions &> /dev/null
-PERIOD_US=$1 do_init_common "" "" 0 "" 0 "$2" &> /dev/null
+PERIOD_US=$1 . ./functions &> memguard_params.log
+PERIOD_US=$1 do_init_common "" "" 0 "" 0 "$2" &>> memguard_params.log
 if [ $? -ne 0 ] ; then
   echo "Error initializing memguard module"
   exit 1
