@@ -2,7 +2,7 @@
   vars:
     mem: 512M
     period: 50000
-    fldr: "{{ansible_env.HOME}}/var/porta"
+    fldr: "{{ansible_env.HOME}}/var/porta/base-vs-limited-targets"
   pre_tasks:
   - name: Assert preconditions
     assert:

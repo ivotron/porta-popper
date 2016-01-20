@@ -1,6 +1,6 @@
 - hosts: all
   vars:
-    exp_folder: "{{ ansible_env.HOME}}/experiments/memguard"
+    exp_folder: "{{ ansible_env.HOME}}/var/porta/cgroups-memguard-interaction"
     cadvisor_enabled: false
     reps: [1]
   pre_tasks:

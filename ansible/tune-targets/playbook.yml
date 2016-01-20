@@ -1,6 +1,6 @@
 - hosts: all
   vars:
-    fldr: "{{ansible_env.HOME}}/var/porta"
+    fldr: "{{ansible_env.HOME}}/var/porta/tune-targets"
   pre_tasks:
   - name: Assert preconditions
     assert:
