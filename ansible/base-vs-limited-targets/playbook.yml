@@ -57,18 +57,18 @@
   - name: execute testing benchmarks without limits
     shell: docker run --rm --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > {{fldr}}/tests/{{ item.replace('/','_') }}_without_limits.json
     with_items: benchmarks
-    when: inventory_host in groups.targets or (inventory_host in groups.base and not skip_base|bool)
+    when: inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_base|bool)
   - name: execute testing benchmarks with limits
-    shell: ./porta run --rm --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > {{fldr}}/tests/{{ item.replace('/','_') }}_with_limits.json
+    shell: ./porta run --rm --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_with_limits.json chdir={{fldr}}
     with_items: benchmarks
     when:
     - inventory_hostname in groups.targets
 
 # aggregate results into one file
   - name: merge outputs with limits
-    command: jq -s add {{fldr}}/tests/*_with_limits.json > {{fldr}}/{{inventory_host}}_with_limits.json
+    command: jq -s add {{fldr}}/tests/*_with_limits.json > {{fldr}}/{{inventory_hostname}}_with_limits.json
   - name: merge outputs without limits
-    command: jq -s add {{fldr}}/tests/*_without_limits.json > {{fldr}}/{{inventory_host}}_without_limits.json
+    command: jq -s add {{fldr}}/tests/*_without_limits.json > {{fldr}}/{{inventory_hostname}}_without_limits.json
 
 # fetch results
   - name: compress tests folder
