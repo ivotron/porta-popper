@@ -17,7 +17,6 @@ ENV OPENTUNER_DIR /opentuner
 ENV PATH /opentuner/venv/bin/:$PATH
 
 ADD porta.py /usr/bin/
-ADD run.py /usr/bin/
 
 ENTRYPOINT ["/usr/bin/porta.py"]
 CMD ["--help"]
