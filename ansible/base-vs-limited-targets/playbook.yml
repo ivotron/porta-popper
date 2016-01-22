@@ -4,18 +4,29 @@
     period: 50000
     fldr: "{{ansible_env.HOME}}/var/porta/base-vs-limited-targets"
     skip_base: true
+    cpus: "0"
+    repetitions: [1]
+    cmds: ['docker', './porta']
   pre_tasks:
   - name: Assert preconditions
     assert:
       that:
       - "ansible_distribution == 'Ubuntu'"
       - "ansible_lsb.major_release|int >= 12"
-      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel)"
+      - "('3.13' in ansible_kernel or '3.15' in ansible_kernel or '3.19' in ansible_kernel)"
       - "'base' in groups"
       - "'targets' in groups"
       - "groups.base|length == 1"
       - "groups.targets|length > 0"
       - "benchmarks is defined"
+  - name: Get jq version
+    local_action: command jq --version
+    register: jq_version
+    sudo: false
+  - name: Check jq version
+    local_action: fail msg='Incorrect jq version (expecting 1.5)'
+    when: "'1.5' not in jq_version.stdout"
+    sudo: false
 
   tasks:
 # setup
@@ -24,8 +35,6 @@
     ignore_errors: true
   - name: install linux linux-headers
     package: name=linux-headers-{{ ansible_kernel }} state=present
-  - name: install jq
-    package: name=jq state=latest
   - name: create test folder
     file: path={{fldr}}/tests state=directory mode=0755
   - name: create test folder locally
@@ -54,31 +63,22 @@
   - name: pull benchmark images
     command: docker pull {{ item }}
     with_items: benchmarks
-  - name: execute testing benchmarks without limits
-    shell: docker run --rm --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > {{fldr}}/tests/{{ item.replace('/','_') }}_without_limits.json
-    with_items: benchmarks
-    when: inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_base|bool)
-  - name: execute testing benchmarks with limits
-    shell: ./porta run --rm --cpu-period={{period}} --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus=0 {{ item }} > tests/{{ item.replace('/','_') }}_with_limits.json chdir={{fldr}}
-    with_items: benchmarks
-    when:
-    - inventory_hostname in groups.targets
-
-# aggregate results into one file
-  - name: merge outputs with limits
-    command: jq -s add {{fldr}}/tests/*_with_limits.json > {{fldr}}/{{inventory_hostname}}_with_limits.json
-  - name: merge outputs without limits
-    command: jq -s add {{fldr}}/tests/*_without_limits.json > {{fldr}}/{{inventory_hostname}}_without_limits.json
+  - name: execute testing benchmarks
+    command: {{item[0]}} run --rm --memory={{mem}} --memory-swap={{mem}} --cpuset-cpus={{cpus}} {{item[1]}} > "{{fldr}}/tests/{{item[1].replace('/','_')}}_{{item[0].replace('./','')}}_{{item[2]}}.json"
+    with_nested:
+    - cmds
+    - benchmarks
+    - repetitions
+    when: inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_base|bool and 'docker' in item[0])
 
 # fetch results
   - name: compress tests folder
     command: tar cvfj tests.bz2 tests chdir={{fldr}}
   - name: get result tar balls
-    fetch: src={{fldr}}/tests.bz2 dest=tests/{{inventory_hostname}}_tests.bz2 flat=yes
-  - name: get results without limits
-    fetch: src={{fldr}}/*_with_limits.json dest=tests/{{inventory_hostname}}_with_limits.json
-  - name: get results without limits
-    fetch: src={{fldr}}/*_without_limits.json dest=tests/{{inventory_hostname}}_without_limits.json
+    fetch: src={{fldr}}/tests.bz2 dest=tests/{{inventory_hostname}}.bz2 flat=yes
+  - name: uncompress locally
+    local_action: command ./uncompress
+    sudo: false
 
 # postprocess on localhost
   - name: merge results
