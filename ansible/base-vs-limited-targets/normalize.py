@@ -10,7 +10,7 @@ if len(sys.argv) != 2:
 base_machine = sys.argv[1]
 
 # get a dataframe base results only with columns 'benchmark' and 'result'
-predicate = (df['machine'] == base_machine) & (df['limits'] == 'no')
+predicate = (df['machine'] == base_machine) & (df['limits'] == 'without')
 base_results = df[predicate][['benchmark', 'result']]
 
 # rename the 'result' column

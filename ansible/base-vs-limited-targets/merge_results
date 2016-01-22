@@ -2,19 +2,13 @@
 
 echo "machine,limits,benchmark,class,repetition,result" > alltests.csv
 
-for machine in tests/* ; do
-  for test in tests/machine/* ; do
-    n=`basename $i`
-    container=`echo  $n | sed -n 's/\(.*\)_.*_.*\.json/\1/p'`
-    executor=`echo   $n | sed -n 's/.*_\(.*\)_.*\.json/\1/p'`
-    repetition=`echo $n | sed -n 's/.*_.*_\(.*\)\.json/\1/p'`
+for m in `ls -d tests/*/` ; do
+  machine=`basename $m`
+  for t in `ls $m/*` ; do
+    outfile=`basename $t`
+    method=`echo $outfile | sed -n 's/.*_\(.*\)_.*\.json/\1/p'`
+    repetition=`echo $outfile | sed -n 's/.*_.*_\(.*\)\.json/\1/p'`
 
-    if [[ "$executor" == "docker" ]] ; then
-      # when executed with docker, means without limits
-      jq -r --arg n $machine --arg r $repetition '.[] | [$n,  "no", .name, .class, $r, .result] | @csv' $i >> alltests.csv
-    else
-      # when executed with porta, means with limits
-      jq -r --arg n $machine --arg r $repetition '.[] | [$n, "yes", .name, .class, $r, .result] | @csv' $i >> alltests.csv
-    fi
+    jq -r --arg m $method --arg n $machine --arg r $repetition '.[] | [$n,  $m, .name, .class, $r, .result] | @csv' $t >> alltests.csv
   done
 done
