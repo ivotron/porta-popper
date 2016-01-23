@@ -8,6 +8,7 @@ RUN apt-get update && \
     sed -i 's/O2/O0/' /stress-ng/Makefile && \
     make -C /stress-ng && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN mv /stress-ng/stress-ng /usr/bin
 ADD postprocess.py /
 ADD entrypoint.sh /
 ENTRYPOINT ["/entrypoint.sh"]
