@@ -10,7 +10,6 @@ execfile(t, dict(__file__=t))
 
 import argparse
 import json
-import subprocess
 import logging
 import opentuner
 from opentuner import ConfigurationManipulator
@@ -22,25 +21,25 @@ from opentuner.search import technique
 log = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(parents=opentuner.argparsers())
-parser.add_argument('--action', default='none',
-                    choices=('base', 'tune'),
-                    help='Whether to tune or generate base results')
-parser.add_argument('--categories', default=['processor', 'memory'], nargs='+',
-                    help=('Type of benchmarks to consider. One or more values'
-                          ' of processor, memory, io or net.'))
+parser.add_argument('--categories', default=['cpu', 'memory'], nargs='+',
+                    help=("Type of benchmarks to consider. One or more values"
+                          " of 'cpu' or 'memory' (separated by spaces)."))
 parser.add_argument('--base-file', default='base.json',
                     help=('JSON file containing results of base system'))
 parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
-parser.add_argument('--benchmarks',
-                    default=['stream-copy', 'stream-add', 'stream-scale',
-                             'stream-triad', 'crafty', 'c-ray'],
-                    nargs='+', help='benchmarks to execute')
+parser.add_argument('--benchmark-image',
+                    default='microbench', help='docker image for benchmarks.')
+parser.add_argument('--max-mem-bw', required=True,
+                    help='Maximum bandwidth for memory')
+parser.add_argument('--max-cpu-quota', required=True,
+                    help='Maximum CPU quota allowed')
+parser.add_argument('--docker-flags', type=str, required=True,
+                    help='extra flags that are passed to docker-run')
 parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
-parser.add_argument('--cpuquota', default='',
-                    help="For other-than-cpu categories, this must be given")
 # internal arguments
+parser.add_argument('--cpuquota', help=argparse.SUPPRESS)
 parser.add_argument('--category', help=argparse.SUPPRESS)
 parser.add_argument('--base-data', type=json.loads, help=argparse.SUPPRESS)
 parser.add_argument('--outjson', help=argparse.SUPPRESS)
@@ -107,38 +106,25 @@ def get_result(results_data, bench_name):
     raise Exception("Can't find result for benchmark " + bench_name)
 
 
-def get_benchmarks_for_category(benchmarks, base_data, category):
+def get_benchmarks_for_category(base_data, category):
     benchs = []
     for bench in base_data:
-        if bench['name'] in benchmarks and bench['class'] == category:
+        if bench['class'] == category:
             benchs.append(bench['name'])
     return benchs
 
 
 def get_cmd_for_class(category, benchmarks, cfg):
-    if category == 'processor':
-        return ('docker run '
-                ' --cpuset-cpus=0'
-                ' --cpu-quota={}'
-                ' --cpu-period={}'
-                ' -e BENCHMARKS="{}"'
-                ' --rm'
-                ' ivotron/microbench').format(
-                    cfg['cpu-quota'], "50000",
-                    ' '.join(benchmarks))
+    if category == 'cpu':
+        return ('docker run {} --rm --cpu-quota={} {}').format(
+                   args.docker_flags, cfg['cpu-quota'], args.benchmark_image)
     elif category == 'memory':
         if args.cpuquota is None:
             raise Exception("Expecting value for cpuquota")
 
-        return ('docker-run-wrapper {} {}'
-                ' --cpuset-cpus=0'
-                ' --cpu-quota={}'
-                ' --cpu-period={}'
-                ' -e BENCHMARKS="{}"'
-                ' --rm'
-                ' ivotron/microbench').format(
-                    "1000", cfg['mem-bw-limit'], args.cpuquota, "50000",
-                    ' '.join(benchmarks))
+        return ('docker-run-wrapper {} {} {} --rm --cpu-quota={} {}').format(
+                   "1000", cfg['mem-bw-limit'],
+                   args.docker_flags, args.cpuquota, args.benchmark_image)
 
 
 class PortaTuner(MeasurementInterface):
@@ -149,12 +135,12 @@ class PortaTuner(MeasurementInterface):
         """
         manipulator = ConfigurationManipulator()
 
-        if args.category == 'processor':
+        if args.category == 'cpu':
             manipulator.add_parameter(
-                IntegerParameter('cpu-quota', 5000, 50000))
+                IntegerParameter('cpu-quota', 1000, args.max_cpu_quota))
         elif args.category == 'memory':
             manipulator.add_parameter(
-                IntegerParameter('mem-bw-limit', 100, 250))
+                IntegerParameter('mem-bw-limit', 50, args.max_mem_bw))
         else:
             raise Exception('Unknown benchmark class ' + args.category)
 
@@ -167,8 +153,7 @@ class PortaTuner(MeasurementInterface):
         cfg = desired_result.configuration.data
 
         base_data = self.args.base_data
-        benchs = get_benchmarks_for_category(self.args.benchmarks,
-                                             base_data,
+        benchs = get_benchmarks_for_category(base_data,
                                              self.args.category)
         if not benchs:
             raise Exception("No benchmarks for " + self.args.category)
@@ -187,8 +172,8 @@ class PortaTuner(MeasurementInterface):
 
             target_data = json.loads(result['stdout'])
 
-            # check that we got results for all benchmarks, otherwise re-run
             try:
+                # check that we got results for all benchmarks, otherwise re-run
                 for bench_name in benchs:
                     get_result(target_data, bench_name)
             except Exception, e:
@@ -226,36 +211,28 @@ class PortaTuner(MeasurementInterface):
         '''
         called at the end with best resultsdb.models.Configuration
         '''
-        if args.category == 'processor':
+        if args.category == 'cpu':
             args.cpuquota = configuration.data['cpu-quota']
         self.args.outjson.update(configuration.data)
 
 if __name__ == '__main__':
     args = parser.parse_args()
 
-    if args.action == 'none':
-        raise Exception("Need one action provided with --action")
-    elif args.action == 'base':
-        print(subprocess.check_output(
-              ('docker run --rm --cpuset-cpus=0 -e BENCHMARKS="{}"'
-               '  ivotron/microbench').format(' '.join(args.benchmarks)),
-              stderr=subprocess.PIPE, shell=True))
-    elif args.action == 'tune':
-        # read input
-        if not args.base_file:
-            raise Exception('Expecting name of file with base results')
-        with open(args.base_file) as f:
-            args.base_data = json.load(f)
+    # read input
+    if not args.base_file:
+        raise Exception('Expecting name of file with base results')
+    with open(args.base_file) as f:
+        args.base_data = json.load(f)
 
-        # initialize output dict
-        args.outjson = {}
+    # initialize output dict
+    args.outjson = {}
 
-        # invoke opentuner for each category
-        for category in args.categories:
-            args.category = category
-            PortaTuner.main(args)
+    # invoke opentuner for each category
+    for category in args.categories:
+        args.category = category
+        PortaTuner.main(args)
 
-        # write output file
-        with open(args.output_file, 'w') as f:
-            json.dump(args.outjson, f)
-            f.write('\n')
+    # write output file
+    with open(args.output_file, 'w') as f:
+        json.dump(args.outjson, f)
+        f.write('\n')

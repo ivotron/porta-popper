@@ -9,50 +9,19 @@ if [ ! -d "/usr/src/linux-headers-`uname -r`" ] ; then
 fi
 type docker >/dev/null 2>&1 || { echo >&2 "Can't find docker command."; exit 1; }
 
-case $1 in
-  "base")
-    docker run \
-      --rm \
-      -v `which docker`:/usr/bin/docker \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-         ivotron/porta --action $@ > base.json
-    ;;
-  "tune")
-    echo "" > parameters.json
-    if [ ! -f base.json ] ; then
-      echo "Cannot find base.json file"
-      exit 1
-    fi
-    docker run \
-      --rm \
-      --privileged \
-      -v /sys/kernel/debug:/sys/kernel/debug \
-      -v /usr/src:/usr/src \
-      -v /lib/modules:/lib/modules \
-      -v `pwd`/base.json:/base.json \
-      -v `pwd`/parameters.json:/parameters.json \
-      -v `which docker`:/usr/bin/docker \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-         ivotron/porta --parallelism 1 --test-limit 20 --technique MonotonicSearch --bail-threshold 1 --action $@
-    ;;
-  "run")
-    if [ ! -f parameters.json ] ; then
-      echo "Cannot find parameters.json file"
-      exit 1
-    fi
-    docker run \
-      --rm \
-      --privileged \
-      --entrypoint=/usr/bin/run.py \
-      -v /sys/kernel/debug:/sys/kernel/debug \
-      -v /usr/src:/usr/src \
-      -v /lib/modules:/lib/modules \
-      -v `pwd`/parameters.json:/parameters.json \
-      -v `which docker`:/usr/bin/docker \
-      -v /var/run/docker.sock:/var/run/docker.sock \
-         ivotron/porta "${@:2}"
-    ;;
-  *)
-    echo "Unknown action '$1'"
-    ;;
-esac
+echo "" > parameters.json
+if [ ! -f base.json ] ; then
+  echo "Cannot find base.json file"
+  exit 1
+fi
+docker run \
+  --rm \
+  --privileged \
+  -v /sys/kernel/debug:/sys/kernel/debug \
+  -v /usr/src:/usr/src \
+  -v /lib/modules:/lib/modules \
+  -v `pwd`/base.json:/base.json \
+  -v `pwd`/parameters.json:/parameters.json \
+  -v `which docker`:/usr/bin/docker \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+     ivotron/porta --parallelism 1 --test-limit 20 --technique MonotonicSearch --bail-threshold 1 "$@"

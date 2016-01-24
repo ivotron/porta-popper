@@ -12,9 +12,11 @@
       - "'targets' in groups"
       - "groups.base|length == 1"
       - "groups.targets|length > 0"
+      - "benchmark_image is defined"
+      - "porta_flags is defined"
+      - "docker_flags is defined"
 
   tasks:
-
 # setup
   - name: delete previous results
     file: path={{fldr}} state=absent
@@ -27,8 +29,8 @@
     copy: src=porta dest={{fldr}} mode=0755
   - name: pull porta image
     command: docker pull ivotron/porta
-  - name: pull microbench image
-    command: docker pull ivotron/microbench
+  - name: pull benchmark images
+    command: docker pull {{benchmark_image}}
 
 # get the base metrics
   - name: check if base.json file exists locally
@@ -38,7 +40,7 @@
     register: base_metrics
     when: inventory_hostname in groups.base
   - name: generate base.json
-    command: ./porta base chdir={{fldr}}
+    shell: docker run {{docker_flags}} {{benchmark_image}} > base.json chdir={{fldr}}
     when:
     - inventory_hostname in groups.base
     - not base_metrics.stat.exists
@@ -54,11 +56,11 @@
     when:
     - inventory_hostname in groups.targets
   - name: tune system
-    command: ./porta tune chdir={{fldr}}
+    command: ./porta tune {{porta_flags}} {{docker_flags}} {{benchmark_image}} chdir={{fldr}}
     when:
     - inventory_hostname in groups.targets
   - name: fetch parameter files to introspect
-    fetch: src={{fldr}}/parameters.json dest=parameters/{{ inventory_hostname }}.json flat=yes
+    fetch: src={{fldr}}/parameters.json dest=parameters/{{inventory_hostname}}.json flat=yes
     when:
     - inventory_hostname in groups.targets
 
