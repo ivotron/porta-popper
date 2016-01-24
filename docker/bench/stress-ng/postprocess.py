@@ -3,15 +3,21 @@
 import yaml
 import sys
 
-with open('/out.yaml', 'r') as f:
+# usage: postprocess <stressor_class> <method>
+#
+# when <method> is given, we assume only one entry in the yaml output
+
+with open('/out.yml', 'r') as f:
     y = yaml.load(f)
 
-if len(sys.argv) == 2:
-    stressor_name = sys.argv[1]
+stressor_class = sys.argv[1]
+
+if len(sys.argv) == 3:
+    stressor_name = sys.argv[2]
     metric = y['metrics'][0]
     print("{")
-    print("\"name\": \"stressng-"+stressor_name+"\",")
-    print("\"class\": \"cpu\",")
+    print("\"name\": \"stressng-"+stressor_class+"-"+stressor_name+"\",")
+    print("\"class\": \"" + stressor_class + "\",")
     print("\"units\": \"bogo-ops-per-second\",")
     print("\"result\": "+str(metric['bogo-ops-per-second-real-time']))
     print("}")
@@ -27,11 +33,12 @@ else:
             stressor_name = metrics['stressor']
 
         print("{")
-        print("\"name\": \"stressng-" + stressor_name + "\",")
+        print("\"name\": \"stressng-"+stressor_class+"-"+stressor_name+"\",")
+        print("\"class\": \"" + stressor_class + "\",")
+        print("\"units\": \"bogo-ops-per-second\",")
         print("\"result\": " + str(metrics['bogo-ops-per-second-real-time']))
         if i < len(y['metrics'])-1:
             print("},")
         else:
             print("}")
         i += 1
-    print("]")
