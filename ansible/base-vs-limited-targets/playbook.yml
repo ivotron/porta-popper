@@ -28,6 +28,16 @@
     local_action: fail msg='Incorrect jq version (expecting 1.5)'
     when: "'1.5' not in jq_version.stdout"
     sudo: false
+  - name: check that results for base exist when we skip it
+    local_action: stat path=tests/{{groups.base}}
+    register: results_for_base
+    when: skip_base|bool
+    sudo: false
+  - name: fail if it doesn't exist
+    local_action: fail msg='Cannot find results for {{item}} in tests/ folder'
+    with_items: groups.base
+    when: results_for_base.stat.exists
+    sudo: false
 
   tasks:
 # setup
@@ -40,6 +50,7 @@
     file: path={{fldr}}/tests state=directory mode=0755
   - name: delete any previous local results
     local_action: file path=tests state=absent
+    when: not skip_base|bool
     sudo: false
     ignore_errors: true
   - name: create test folder locally
@@ -76,6 +87,7 @@
     command: tar cvfj tests.bz2 tests chdir={{fldr}}
   - name: get result tar balls
     fetch: src={{fldr}}/tests.bz2 dest=tests/{{inventory_hostname}}.bz2 flat=yes
+    when: inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_base|bool)
   - name: uncompress locally
     local_action: command ./uncompress
     sudo: false
@@ -88,7 +100,6 @@
     local_action: command docker run --rm -v `pwd`:/data --entrypoint=/data/normalize.py ivotron/jupyter-pd-mpl-h5 {{ item }}
     sudo: false
     with_items: groups.base
-    when: not skip_base|bool
 
 # store facts
   - name: create facts folder
