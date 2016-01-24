@@ -10,6 +10,7 @@ fi
 type docker >/dev/null 2>&1 || { echo >&2 "Can't find docker command."; exit 1; }
 
 echo "" > parameters.json
+echo "" > porta.log
 if [ ! -f base.json ] ; then
   echo "Cannot find base.json file"
   exit 1
@@ -22,6 +23,7 @@ docker run \
   -v /lib/modules:/lib/modules \
   -v `pwd`/base.json:/base.json \
   -v `pwd`/parameters.json:/parameters.json \
+  -v `pwd`/porta.log:/porta.log \
   -v `which docker`:/usr/bin/docker \
   -v /var/run/docker.sock:/var/run/docker.sock \
-     ivotron/porta --parallelism 1 --technique MonotonicSearch --bail-threshold 1 "$@" > porta.log
+     ivotron/porta --parallelism 1 --technique MonotonicSearch --results-log-details /porta.log --bail-threshold 1 "$@"
