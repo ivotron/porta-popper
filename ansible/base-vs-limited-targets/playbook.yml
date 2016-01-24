@@ -23,20 +23,13 @@
   - name: Get jq version
     local_action: command jq --version
     register: jq_version
-    sudo: false
-  - name: Check jq version
-    local_action: fail msg='Incorrect jq version (expecting 1.5)'
-    when: "'1.5' not in jq_version.stdout"
+    fail_when: "'1.5' not in jq_version.stdout"
     sudo: false
   - name: check that results for base exist when we skip it
     local_action: stat path=tests/{{groups.base}}
     register: results_for_base
     when: skip_base|bool
-    sudo: false
-  - name: fail if it doesn't exist
-    local_action: fail msg='Cannot find results for {{item}} in tests/ folder'
-    with_items: groups.base
-    when: results_for_base.stat.exists
+    fail_when: results_for_base.stat.exists
     sudo: false
 
   tasks:
@@ -50,11 +43,13 @@
     file: path={{fldr}}/tests state=directory mode=0755
   - name: delete any previous local results
     local_action: file path=tests state=absent
+    run_once: true
     when: not skip_base|bool
     sudo: false
     ignore_errors: true
   - name: create test folder locally
     local_action: file path=tests state=directory mode=0755
+    run_once: true
     sudo: false
   - name: pull memguard image
     command: docker pull ivotron/memguard
@@ -90,22 +85,27 @@
     when: inventory_hostname in groups.targets or (inventory_hostname in groups.base and not skip_base|bool)
   - name: uncompress locally
     local_action: command ./uncompress
+    run_once: true
     sudo: false
 
 # postprocess on localhost
   - name: merge results
     local_action: command ./merge_results
+    run_once: true
     sudo: false
   - name: obtain normalized results
     local_action: command docker run --rm -v `pwd`:/data --entrypoint=/data/normalize.py ivotron/jupyter-pd-mpl-h5 {{ item }}
+    run_once: true
     sudo: false
     with_items: groups.base
 
 # store facts
   - name: create facts folder
     local_action: file path=facts state=directory mode=0755
+    run_once: true
     sudo: false
   - name: store facts about remotes
     local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    run_once: true
     sudo: false
     with_items: groups['all']

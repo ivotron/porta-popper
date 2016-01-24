@@ -17,9 +17,11 @@
   - name: Get jq version
     local_action: command jq --version
     register: jq_version
+    run_once: true
     sudo: false
   - name: Check jq version
     local_action: fail msg='Incorrect jq version (expecting 1.5)'
+    run_once: true
     when: "'1.5' not in jq_version.stdout"
     sudo: false
 
@@ -81,16 +83,20 @@
     fetch: src={{ exp_folder }}/tests.bz2 dest=tests.bz2 flat=yes
   - name: untar results
     local_action: command tar xvfj tests.bz2
+    run_once: true
     sudo: false
   - name: merge results
     local_action: command ./merge_results
+    run_once: true
     sudo: false
 
 # store facts
   - name: create facts folder
     local_action: file path=facts state=directory mode=0755
+    run_once: true
     sudo: false
   - name: store facts about remotes
     local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=facts/{{ item }}.json
+    run_once: true
     sudo: false
     with_items: groups['all']

@@ -33,6 +33,7 @@
 # get the base metrics
   - name: check if base.json file exists locally
     local_action: stat path="base.json"
+    run_once: true
     sudo: false
     register: base_metrics
     when: inventory_hostname in groups.base
@@ -64,8 +65,10 @@
 # store facts
   - name: create facts folder
     local_action: file path=facts state=directory mode=0755
+    run_once: true
     sudo: false
   - name: store facts about remotes
     local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    run_once: true
     sudo: false
     with_items: groups['all']
