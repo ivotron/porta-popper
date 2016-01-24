@@ -38,7 +38,6 @@
     run_once: true
     sudo: false
     register: base_metrics
-    when: inventory_hostname in groups.base
   - name: generate base.json
     shell: docker run {{docker_flags}} {{benchmark_image}} > base.json chdir={{fldr}}
     when:
@@ -56,11 +55,15 @@
     when:
     - inventory_hostname in groups.targets
   - name: tune system
-    command: ./porta tune {{porta_flags}} {{docker_flags}} {{benchmark_image}} chdir={{fldr}}
+    command: ./porta {{porta_flags}} --docker-flags "{{docker_flags}}" chdir={{fldr}}
     when:
     - inventory_hostname in groups.targets
   - name: fetch parameter files to introspect
     fetch: src={{fldr}}/parameters.json dest=parameters/{{inventory_hostname}}.json flat=yes
+    when:
+    - inventory_hostname in groups.targets
+  - name: fetch porta log
+    fetch: src={{fldr}}/porta.log dest=parameters/{{inventory_hostname}}_porta.log flat=yes
     when:
     - inventory_hostname in groups.targets
 
