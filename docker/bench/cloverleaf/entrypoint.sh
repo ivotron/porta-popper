@@ -10,6 +10,6 @@ fi
 result=`cat output`
 echo "[{"
 echo "\"name\": \"cloverleaf-serial\", "
-echo "\"class\": \"processor\", "
+echo "\"class\": \"cpu\", "
 echo "\"result\": \"$result\" "
 echo "}]"

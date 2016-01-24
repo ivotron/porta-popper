@@ -15,12 +15,13 @@ if [[ $BENCHMARKS == *"cpu"* ]] ; then
   result=`cat output | grep 'total time:' | awk '{ print $NF }' | sed 's/s//'`
   echo "{"
   echo "\"name\": \"sysbench-cpu\", "
-  echo "\"class\": \"processor\", "
+  echo "\"class\": \"cpu\", "
   echo "\"result\": \"$result\" "
   echo "}"
+  need_comma=true
 fi
 
-if [[ $BENCHMARKS == *"mem"* ]] && [[  $BENCHMARKS == *"cpu"* ]] ; then
+if [ "$need_comma" = true ] ; then
   echo ","
 fi
 

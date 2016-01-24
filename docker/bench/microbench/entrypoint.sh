@@ -42,12 +42,12 @@ for bench in $BENCHMARKS ; do
   case $bench in
   crafty)
     result=`grep Crafty /tmp/out | awk -F',' '{print $2}'`
-    json+="\n\"class\": \"processor\","
+    json+="\n\"class\": \"cpu\","
     json+="\n\"unit\": \"sec\","
     ;;
   c-ray)
     result=`grep C-Ray /tmp/out | awk -F',' '{print $2}'`
-    json+="\n\"class\": \"processor\","
+    json+="\n\"class\": \"cpu\","
     json+="\n\"unit\": \"sec\","
     ;;
   stream-*)

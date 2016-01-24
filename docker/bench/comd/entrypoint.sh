@@ -10,6 +10,6 @@ fi
 result=`sed -n 's/total *1 *\([0-9]*\.[0-9]*\) *.*/\1/p' output`
 echo "[{"
 echo "\"name\": \"comd-serial\", "
-echo "\"class\": \"processor\", "
+echo "\"class\": \"cpu\", "
 echo "\"result\": \"$result\" "
 echo "}]"
