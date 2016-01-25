@@ -67,7 +67,7 @@ class MonotonicSearch(technique.SequentialSearchTechnique):
         current = driver.get_configuration(current)
         yield current
 
-        step_size = 0.15
+        step_size = 0.25
         go_down = True
         n = current
 
