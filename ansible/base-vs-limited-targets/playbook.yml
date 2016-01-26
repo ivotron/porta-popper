@@ -23,13 +23,13 @@
   - name: Get jq version
     local_action: command jq --version
     register: jq_version
-    fail_when: "'1.5' not in jq_version.stdout"
+    failed_when: "'1.5' not in jq_version.stdout"
     sudo: false
   - name: check that results for base exist when we skip it
     local_action: stat path=tests/{{groups.base}}
     register: results_for_base
     when: skip_base|bool
-    fail_when: results_for_base.stat.exists
+    failed_when: results_for_base.stat.exists
     sudo: false
 
   tasks:
