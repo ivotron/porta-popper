@@ -4,6 +4,7 @@
     mem: 512M
     fldr: "{{ansible_env.HOME}}/var/porta/base-vs-limited-targets"
     skip_base: false
+    skip_memory_limit: true
   pre_tasks:
   - name: Assert preconditions
     assert:
@@ -75,7 +76,7 @@
     with_nested:
     - benchmarks
     - repetitions
-    when: inventory_hostname in groups.targets
+    when: inventory_hostname in groups.targets and not skip_memory_limit|bool
 
 # fetch results
   - name: compress tests folder
