@@ -1,0 +1,89 @@
+- hosts: all
+  vars:
+    cpus: "0"
+    mem: 512M
+    fldr: "{{ansible_env.HOME}}/var/porta/cgroups-cpuquota"
+  pre_tasks:
+  - name: Assert preconditions
+    assert:
+      that:
+      - "ansible_distribution == 'Ubuntu'"
+      - "ansible_lsb.major_release|int >= 12"
+      - "('3.13' in ansible_kernel or '3.15' in ansible_kernel or '3.19' in ansible_kernel)"
+      - "benchmarks is defined"
+      - "benchmark_flags is defined"
+      - "cpu_period is defined"
+      - "cpu_quotas is defined"
+      - "repetitions is defined"
+  - name: Get jq version
+    local_action: command jq --version
+    register: jq_version
+    failed_when: "'1.5' not in jq_version.stdout"
+    sudo: false
+
+  tasks:
+# setup
+  - name: delete previous results
+    file: path={{fldr}} state=absent
+    ignore_errors: true
+  - name: create test folder
+    file: path={{fldr}}/tests state=directory mode=0755
+  - name: delete any previous local results
+    local_action: file path=tests state=absent
+    run_once: true
+    sudo: false
+    ignore_errors: true
+  - name: create test folder locally
+    local_action: file path=tests state=directory mode=0755
+    run_once: true
+    sudo: false
+
+# execute test benchmarks
+  - name: pull benchmark images
+    command: docker pull {{ item }}
+    with_items: benchmarks
+  - name: execute benchmarks
+    shell: >
+      docker run \
+          --rm \
+          --name {{item[0].replace('/','.')}}_cpuquota-{{item[1]}}_rep-{{item[2]}} \
+          --memory={{mem}} \
+          --cpuset-cpus={{cpus}} \
+          --cpu-period={{cpu_period}} \
+          --cpu-quota={{item[1]}} \
+          {{benchmark_flags[item[0]]}} \
+          {{item[0]}} > {{fldr}}/tests/{{item[0].replace('/','.')}}_cpuquota-{{item[1]}}_rep-{{item[2]}}.json
+    with_nested:
+    - benchmarks
+    - cpu_quotas
+    - repetitions
+
+# fetch results
+  - name: compress tests folder
+    command: tar cvfj tests.bz2 tests chdir={{fldr}}
+  - name: get result tar balls
+    fetch: src={{fldr}}/tests.bz2 dest=tests/{{inventory_hostname}}.bz2 flat=yes
+
+# postprocess on localhost
+  - name: uncompress locally
+    local_action: command ./uncompress
+    run_once: true
+    sudo: false
+  - name: merge results
+    local_action: command ./merge_results
+    run_once: true
+    sudo: false
+  - name: remove uncompressed files
+    local_action: command rm -r tests/{{inventory_hostname}}
+    sudo: false
+
+# store facts
+  - name: create facts folder
+    local_action: file path=facts state=directory mode=0755
+    run_once: true
+    sudo: false
+  - name: store facts about remotes
+    local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    run_once: true
+    sudo: false
+    with_items: groups['all']
