@@ -11,5 +11,6 @@ result=`cat output`
 echo "[{"
 echo "\"name\": \"cloverleaf-serial\", "
 echo "\"class\": \"cpu\", "
+echo "\"lower_is_better\": true, "
 echo "\"result\": \"$result\" "
 echo "}]"

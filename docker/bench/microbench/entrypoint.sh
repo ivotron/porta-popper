@@ -43,16 +43,19 @@ for bench in $BENCHMARKS ; do
   crafty)
     result=`grep Crafty /tmp/out | awk -F',' '{print $2}'`
     json+="\n\"class\": \"cpu\","
+    json+="\n\"lower_is_better\": true,"
     json+="\n\"unit\": \"sec\","
     ;;
   c-ray)
     result=`grep C-Ray /tmp/out | awk -F',' '{print $2}'`
     json+="\n\"class\": \"cpu\","
+    json+="\n\"lower_is_better\": true,"
     json+="\n\"unit\": \"sec\","
     ;;
   stream-*)
     json+="\n\"class\": \"memory\","
     json+="\n\"unit\": \"mb/s\","
+    json+="\n\"lower_is_better\": false,"
     case $bench in
     stream-add) result=`grep "Stream.*Add" /tmp/out | awk -F',' '{print $2}'` ;;
     stream-copy) result=`grep "Stream.*Copy" /tmp/out | awk -F',' '{print $2}'` ;;

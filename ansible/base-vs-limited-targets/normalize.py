@@ -22,8 +22,21 @@ df = pd.merge(base_results, df)
 # and exclude the base system itself
 df = df[df['machine'] != base_machine]
 
+happened = False
+
+
 # lastly, get normalized results for target systems w.r.t. the base system
-df['normalized'] = df['result'] / df['base_result']
+def normalize(row):
+    if row['lower_is_better'] is True:
+        return row['base_result'] / row['result']
+    else:
+        global happened
+        happened = True
+        return row['result'] / row['base_result']
+
+df['normalized'] = df.apply(normalize, axis=1)
+
+print("happened: " + str(happened))
 
 # and rewrite the results, now including the normalized column
 df.to_csv('/data/alltests_with_normalized_results.csv', index=False)

@@ -16,6 +16,7 @@ if [[ $BENCHMARKS == *"cpu"* ]] ; then
   echo "{"
   echo "\"name\": \"sysbench-cpu\", "
   echo "\"class\": \"cpu\", "
+  echo "\"lower_is_better\": true, "
   echo "\"result\": \"$result\" "
   echo "}"
   need_comma=true
@@ -37,6 +38,7 @@ if [[ $BENCHMARKS == *"mem"* ]] ; then
   echo "{"
   echo "\"name\": \"sysbench-memory\", "
   echo "\"class\": \"memory\", "
+  echo "\"lower_is_better\": true, "
   echo "\"result\": \"$result\" "
   echo "}"
 fi

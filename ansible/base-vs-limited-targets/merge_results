@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "machine,limits,benchmark,class,repetition,result" > alltests.csv
+echo "machine,limits,benchmark,class,lower_is_better,repetition,result" > alltests.csv
 
 for m in `ls -d tests/*/` ; do
   machine=`basename $m`
@@ -9,6 +9,6 @@ for m in `ls -d tests/*/` ; do
     method=`echo $outfile | sed -n 's/.*_\(.*\)_.*\.json/\1/p'`
     repetition=`echo $outfile | sed -n 's/.*_.*_\(.*\)\.json/\1/p'`
 
-    jq -r --arg m $method --arg n $machine --arg r $repetition '.[] | [$n,  $m, .name, .class, $r, .result] | @csv' $t >> alltests.csv
+    jq -r --arg m $method --arg n $machine --arg r $repetition '.[] | [$n,  $m, .name, .class, .lower_is_better, $r, .result] | @csv' $t >> alltests.csv
   done
 done

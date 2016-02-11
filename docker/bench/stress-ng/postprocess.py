@@ -19,6 +19,7 @@ if len(sys.argv) == 3:
     print("\"name\": \"stressng-"+stressor_class+"-"+stressor_name+"\",")
     print("\"class\": \"" + stressor_class + "\",")
     print("\"units\": \"bogo-ops-per-second\",")
+    print("\"lower_is_better\": false,")
     print("\"result\": "+str(metric['bogo-ops-per-second-real-time']))
     print("}")
 else:
@@ -36,6 +37,7 @@ else:
         print("\"name\": \"stressng-"+stressor_class+"-"+stressor_name+"\",")
         print("\"class\": \"" + stressor_class + "\",")
         print("\"units\": \"bogo-ops-per-second\",")
+        print("\"lower_is_better\": false,")
         print("\"result\": " + str(metrics['bogo-ops-per-second-real-time']))
         if i < len(y['metrics'])-1:
             print("},")

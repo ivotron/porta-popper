@@ -1,2 +1,2 @@
 #!/bin/sh
-echo '[{"name": "dummy", "class": "cpu", "result": 1}]'
+echo '[{"name": "dummy", "lower_is_better": false, "class": "cpu", "result": 1}]'
