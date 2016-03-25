@@ -106,4 +106,4 @@ the `--file` flag of the `base` command.
 # Dependencies
 
   * Docker 1.7+
-  * Linux 3.13-* (along with kernel headers)
+  * Linux 3.19+

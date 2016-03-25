@@ -3,10 +3,6 @@
 # helper script to execute porta
 
 # check prerequisites
-if [ ! -d "/usr/src/linux-headers-`uname -r`" ] ; then
-  echo "ERROR: headers for `uname -r` not found"
-  exit 1
-fi
 type docker >/dev/null 2>&1 || { echo >&2 "Can't find docker command."; exit 1; }
 
 echo "" > parameters.json
@@ -18,12 +14,10 @@ fi
 docker run \
   --rm \
   --privileged \
-  -v /sys/kernel/debug:/sys/kernel/debug \
-  -v /usr/src:/usr/src \
-  -v /lib/modules:/lib/modules \
+  -v /sys/fs/cgroup/freezer:/sys/fs/cgroup/freezer \
   -v `pwd`/base.json:/base.json \
   -v `pwd`/parameters.json:/parameters.json \
   -v `pwd`/porta.log:/porta.log \
   -v `which docker`:/usr/bin/docker \
   -v /var/run/docker.sock:/var/run/docker.sock \
-     ivotron/porta --parallelism 1 --technique MonotonicSearch --results-log-details /porta.log --bail-threshold 1 "$@"
+  ivotron/porta --parallelism 1 --technique MonotonicSearch --results-log-details /porta.log --bail-threshold 1 "$@"

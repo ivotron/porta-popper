@@ -35,7 +35,7 @@ parser.add_argument('--max-mem-bw', required=True,
 parser.add_argument('--max-cpu-quota', required=True,
                     help='Maximum CPU quota allowed')
 parser.add_argument('--docker-flags', type=str, required=True,
-                    help='extra flags that are passed to docker-run')
+                    help='extra flags that are passed to docker run')
 parser.add_argument('--show-bench-results', action='store_true',
                     help=('Show result of each benchmark (for every test)'))
 # internal arguments
@@ -122,7 +122,7 @@ def get_cmd_for_class(category, benchmarks, cfg):
         if args.cpuquota is None:
             raise Exception("Expecting value for cpuquota")
 
-        return ('docker-run-wrapper {} {} {} --rm --cpu-quota={} {}').format(
+        return ('docker-run {} {} 0 {} --rm --cpu-quota={} {}').format(
                    "1000", cfg['mem-bw-limit'],
                    args.docker_flags, args.cpuquota, args.benchmark_image)
 
