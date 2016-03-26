@@ -1,19 +1,21 @@
 #!/bin/bash
 
-echo "machine,cpuquota,benchmark,class,repetition,result" > alltests.csv
+echo "machine,period,quota,benchmark,class,repetition,result" > alltests.csv
 
 for m in `ls -d tests/*/` ; do
   machine=`basename $m`
   for t in `ls $m/*` ; do
     outfile=`basename $t`
-    cpuquota=`echo $outfile | sed -n 's/.*_cpuquota-\(.*\)_.*\.json/\1/p'`
-    repetition=`echo $outfile | sed -n 's/.*_.*_rep-\(.*\)\.json/\1/p'`
+    period=`echo $outfile | sed -n 's/.*_cpuperiod-\(.*\)_.*_.*\.json/\1/p'`
+    quota=`echo $outfile | sed -n 's/.*_.*_quotafactor-\(.*\)_.*\.json/\1/p'`
+    repetition=`echo $outfile | sed -n 's/.*_.*_.*_rep-\(.*\)\.json/\1/p'`
 
     jq -r \
       --arg n $machine \
-      --arg q $cpuquota \
+      --arg p $period \
+      --arg q $quota \
       --arg r $repetition \
-      '.[] | [$n,  $q, .name, .class, $r, .result] | @csv' \
+      '.[] | [$n,  $p, $q, .name, .class, $r, .result] | @csv' \
       $t >> alltests.csv
   done
 done

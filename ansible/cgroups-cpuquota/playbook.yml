@@ -7,19 +7,21 @@
   - name: Assert preconditions
     assert:
       that:
-      - "ansible_distribution == 'Ubuntu'"
-      - "ansible_lsb.major_release|int >= 12"
-      - "('3.13' in ansible_kernel or '3.15' in ansible_kernel or '3.19' in ansible_kernel)"
       - "benchmarks is defined"
       - "benchmark_flags is defined"
-      - "cpu_period is defined"
-      - "cpu_quotas is defined"
+      - "cpu_periods is defined"
+      - "cpu_quota_factors is defined"
       - "repetitions is defined"
   - name: Get jq version
     local_action: command jq --version
     register: jq_version
+    run_once: true
     failed_when: "'1.5' not in jq_version.stdout"
     sudo: false
+  - name: Check that docker is installed
+    command: docker -v
+    register: result
+    failed_when: result.rc != 0
 
   tasks:
 # setup
@@ -41,22 +43,24 @@
 # execute test benchmarks
   - name: pull benchmark images
     command: docker pull {{ item }}
-    with_items: benchmarks
+    with_items: '{{benchmarks}}'
   - name: execute benchmarks
     shell: >
       docker run \
           --rm \
-          --name {{item[0].replace('/','.')}}_cpuquota-{{item[1]}}_rep-{{item[2]}} \
+          --name {{item[0].replace('/','.')}}_cpuperiod-{{item[1]}}_quotafactor-{{item[2]}}_rep-{{item[3]}} \
           --memory={{mem}} \
           --cpuset-cpus={{cpus}} \
-          --cpu-period={{cpu_period}} \
-          --cpu-quota={{item[1]}} \
+          --cpu-period={{item[1]}} \
+          --cpu-quota={{(item[1] * item[2]) | int}} \
           {{benchmark_flags[item[0]]}} \
-          {{item[0]}} > {{fldr}}/tests/{{item[0].replace('/','.')}}_cpuquota-{{item[1]}}_rep-{{item[2]}}.json
+          {{item[0]}} > {{fldr}}/tests/{{item[0].replace('/','.')}}_cpuperiod-{{item[1]}}_cpuquota-{{item[2]}}_rep-{{item[3]}}.json
+
     with_nested:
-    - benchmarks
-    - cpu_quotas
-    - repetitions
+    - "{{benchmarks}}"
+    - "{{cpu_periods}}"
+    - "{{cpu_quota_factors}}"
+    - "{{repetitions}}"
 
 # fetch results
   - name: compress tests folder
