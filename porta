@@ -17,8 +17,8 @@ docker run \
   --pid=host \
   -v `pwd`/base.json:/base.json \
   -v `pwd`/parameters.json:/parameters.json \
-  -v `pwd`/porta.log:/porta.log \
   -v `which docker`:/usr/bin/docker \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /sys/fs/:/sys/fs/ \
-  ivotron/porta --parallelism 1 --technique MonotonicSearch --results-log-details /porta.log --bail-threshold 1 "$@"
+  -e PYTHONWARNINGS="ignore" \
+  ivotron/porta --parallelism 1 --technique MonotonicSearch --bail-threshold 1 "$@" &> porta.log

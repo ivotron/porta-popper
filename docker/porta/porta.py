@@ -29,7 +29,7 @@ parser.add_argument('--base-file', default='base.json',
 parser.add_argument('--output-file', default='parameters.json',
                     help=('output JSON file containing resulting parameters'))
 parser.add_argument('--benchmark-image',
-                    default='microbench', help='docker image for benchmarks.')
+                    required=True, help='docker image for benchmarks.')
 parser.add_argument('--max-mem-bw', required=True,
                     help='Maximum bandwidth for memory')
 parser.add_argument('--max-cpu-quota', required=True,
@@ -114,7 +114,7 @@ def get_benchmarks_for_category(base_data, category):
     return benchs
 
 
-def get_cmd_for_class(category, benchmarks, cfg):
+def get_cmd_for_class(category, cfg):
     if category == 'cpu':
         return ('docker run {} --rm --cpu-quota={} {}').format(
                    args.docker_flags, cfg['cpu-quota'], args.benchmark_image)
@@ -158,7 +158,7 @@ class PortaTuner(MeasurementInterface):
         if not benchs:
             raise Exception("No benchmarks for " + self.args.category)
 
-        docker_cmd = get_cmd_for_class(self.args.category, benchs, cfg)
+        docker_cmd = get_cmd_for_class(self.args.category, cfg)
 
         has_incomplete_results = True
 
@@ -192,10 +192,6 @@ class PortaTuner(MeasurementInterface):
             speedup = target_result/base_result
             speedup_sum += speedup
             count += 1
-
-            if self.args.show_bench_results:
-                log.info(bench_name + ": " + str(target_result) + " " +
-                         str(cfg) + " speedup: " + str(speedup))
 
         speedup_mean = speedup_sum / count
 
