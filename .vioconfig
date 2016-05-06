@@ -1,4 +1,0 @@
-repo_path = /Users/ivo/tmp/porta
-snapshots_path = .snapshots
-backend_type = posix
-
