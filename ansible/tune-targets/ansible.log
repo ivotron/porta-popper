@@ -1,0 +1,163 @@
+
+2016-05-16 02:46:19,591 p=31212 u=ivo |  PLAY [all] *********************************************************************
+2016-05-16 02:46:19,611 p=31212 u=ivo |  TASK [setup] *******************************************************************
+2016-05-16 02:46:20,545 p=31212 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:20,683 p=31212 u=ivo |  ok: [192.168.140.86]
+2016-05-16 02:46:20,737 p=31212 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:20,905 p=31212 u=ivo |  ok: [147.75.201.115]
+2016-05-16 02:46:22,687 p=31212 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:32,790 p=31212 u=ivo |  ok: [192.168.140.84]
+2016-05-16 02:46:32,797 p=31212 u=ivo |  TASK [check if docker is statically linked] ************************************
+2016-05-16 02:46:33,022 p=31212 u=ivo |  fatal: [nibbler.soe.ucsc.edu]: FAILED! => {"changed": true, "cmd": ["ldd", "/usr/bin/docker"], "delta": "0:00:00.008163", "end": "2016-05-16 02:46:40.082644", "failed": true, "rc": 1, "start": "2016-05-16 02:46:40.074481", "stderr": "", "stdout": "\tnot a dynamic executable", "stdout_lines": ["\tnot a dynamic executable"], "warnings": []}
+2016-05-16 02:46:33,022 p=31212 u=ivo |  ...ignoring
+2016-05-16 02:46:33,026 p=31212 u=ivo |  fatal: [dwill.soe.ucsc.edu]: FAILED! => {"changed": true, "cmd": ["ldd", "/usr/bin/docker"], "delta": "0:00:00.005501", "end": "2016-05-16 02:47:44.157326", "failed": true, "rc": 1, "start": "2016-05-16 02:47:44.151825", "stderr": "", "stdout": "\tnot a dynamic executable", "stdout_lines": ["\tnot a dynamic executable"], "warnings": []}
+2016-05-16 02:46:33,026 p=31212 u=ivo |  ...ignoring
+2016-05-16 02:46:33,051 p=31212 u=ivo |  fatal: [192.168.140.84]: FAILED! => {"changed": true, "cmd": ["ldd", "/usr/bin/docker"], "delta": "0:00:00.012318", "end": "2016-05-16 02:51:43.655892", "failed": true, "rc": 1, "start": "2016-05-16 02:51:43.643574", "stderr": "", "stdout": "\tnot a dynamic executable", "stdout_lines": ["\tnot a dynamic executable"], "warnings": []}
+2016-05-16 02:46:33,051 p=31212 u=ivo |  ...ignoring
+2016-05-16 02:46:33,058 p=31212 u=ivo |  fatal: [192.168.140.86]: FAILED! => {"changed": true, "cmd": ["ldd", "/usr/bin/docker"], "delta": "0:00:00.009768", "end": "2016-05-16 02:47:30.117934", "failed": true, "rc": 1, "start": "2016-05-16 02:47:30.108166", "stderr": "", "stdout": "\tnot a dynamic executable", "stdout_lines": ["\tnot a dynamic executable"], "warnings": []}
+2016-05-16 02:46:33,058 p=31212 u=ivo |  ...ignoring
+2016-05-16 02:46:33,139 p=31212 u=ivo |  fatal: [147.75.201.115]: FAILED! => {"changed": true, "cmd": ["ldd", "/usr/bin/docker"], "delta": "0:00:00.008505", "end": "2016-05-16 05:46:33.027886", "failed": true, "rc": 1, "start": "2016-05-16 05:46:33.019381", "stderr": "", "stdout": "\tnot a dynamic executable", "stdout_lines": ["\tnot a dynamic executable"], "warnings": []}
+2016-05-16 02:46:33,139 p=31212 u=ivo |  ...ignoring
+2016-05-16 02:46:34,232 p=31212 u=ivo |  fatal: [pc-c220m4-r04-02.wisc.cloudlab.us]: FAILED! => {"changed": true, "cmd": ["ldd", "/usr/bin/docker"], "delta": "0:00:00.006971", "end": "2016-05-16 04:46:34.081290", "failed": true, "rc": 1, "start": "2016-05-16 04:46:34.074319", "stderr": "", "stdout": "\tnot a dynamic executable", "stdout_lines": ["\tnot a dynamic executable"], "warnings": []}
+2016-05-16 02:46:34,232 p=31212 u=ivo |  ...ignoring
+2016-05-16 02:46:34,236 p=31212 u=ivo |  TASK [ensure docker-engine is installed] ***************************************
+2016-05-16 02:46:34,315 p=31212 u=ivo |  skipping: [147.75.201.115] => (item=[]) 
+2016-05-16 02:46:34,323 p=31212 u=ivo |  skipping: [nibbler.soe.ucsc.edu] => (item=[]) 
+2016-05-16 02:46:34,328 p=31212 u=ivo |  skipping: [dwill.soe.ucsc.edu] => (item=[]) 
+2016-05-16 02:46:34,336 p=31212 u=ivo |  skipping: [192.168.140.84] => (item=[]) 
+2016-05-16 02:46:34,345 p=31212 u=ivo |  skipping: [192.168.140.86] => (item=[]) 
+2016-05-16 02:46:34,353 p=31212 u=ivo |  skipping: [pc-c220m4-r04-02.wisc.cloudlab.us] => (item=[]) 
+2016-05-16 02:46:34,358 p=31212 u=ivo |  TASK [stop the docker daemon] **************************************************
+2016-05-16 02:46:34,407 p=31212 u=ivo |  skipping: [147.75.201.115]
+2016-05-16 02:46:34,412 p=31212 u=ivo |  skipping: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:34,418 p=31212 u=ivo |  skipping: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:34,429 p=31212 u=ivo |  skipping: [192.168.140.84]
+2016-05-16 02:46:34,438 p=31212 u=ivo |  skipping: [192.168.140.86]
+2016-05-16 02:46:34,445 p=31212 u=ivo |  skipping: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:34,449 p=31212 u=ivo |  TASK [get statically linked docker tarball] ************************************
+2016-05-16 02:46:34,500 p=31212 u=ivo |  skipping: [147.75.201.115]
+2016-05-16 02:46:34,506 p=31212 u=ivo |  skipping: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:34,512 p=31212 u=ivo |  skipping: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:34,521 p=31212 u=ivo |  skipping: [192.168.140.84]
+2016-05-16 02:46:34,527 p=31212 u=ivo |  skipping: [192.168.140.86]
+2016-05-16 02:46:34,536 p=31212 u=ivo |  skipping: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:34,541 p=31212 u=ivo |  TASK [untar statically linked docker] ******************************************
+2016-05-16 02:46:34,591 p=31212 u=ivo |  skipping: [147.75.201.115]
+2016-05-16 02:46:34,595 p=31212 u=ivo |  skipping: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:34,605 p=31212 u=ivo |  skipping: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:34,613 p=31212 u=ivo |  skipping: [192.168.140.84]
+2016-05-16 02:46:34,621 p=31212 u=ivo |  skipping: [192.168.140.86]
+2016-05-16 02:46:34,628 p=31212 u=ivo |  skipping: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:34,632 p=31212 u=ivo |  TASK [install statically linked docker] ****************************************
+2016-05-16 02:46:34,681 p=31212 u=ivo |  skipping: [147.75.201.115]
+2016-05-16 02:46:34,686 p=31212 u=ivo |  skipping: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:34,692 p=31212 u=ivo |  skipping: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:34,701 p=31212 u=ivo |  skipping: [192.168.140.84]
+2016-05-16 02:46:34,712 p=31212 u=ivo |  skipping: [192.168.140.86]
+2016-05-16 02:46:34,718 p=31212 u=ivo |  skipping: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:34,723 p=31212 u=ivo |  TASK [start the docker daemon] *************************************************
+2016-05-16 02:46:34,977 p=31212 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:34,990 p=31212 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:35,009 p=31212 u=ivo |  ok: [192.168.140.86]
+2016-05-16 02:46:35,033 p=31212 u=ivo |  ok: [192.168.140.84]
+2016-05-16 02:46:35,100 p=31212 u=ivo |  ok: [147.75.201.115]
+2016-05-16 02:46:36,272 p=31212 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:36,278 p=31212 u=ivo |  TASK [check if base.json file exists locally] **********************************
+2016-05-16 02:46:36,461 p=31212 u=ivo |  ok: [147.75.201.115 -> localhost]
+2016-05-16 02:46:36,465 p=31212 u=ivo |  TASK [create result parameters folder if it don't exist] ***********************
+2016-05-16 02:46:36,681 p=31212 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:36,686 p=31212 u=ivo |  ok: [192.168.140.86]
+2016-05-16 02:46:36,688 p=31212 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:36,696 p=31212 u=ivo |  ok: [192.168.140.84]
+2016-05-16 02:46:36,801 p=31212 u=ivo |  ok: [147.75.201.115]
+2016-05-16 02:46:37,890 p=31212 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:37,894 p=31212 u=ivo |  TASK [create facts folder if it don't exist] ***********************************
+2016-05-16 02:46:38,107 p=31212 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 02:46:38,121 p=31212 u=ivo |  ok: [192.168.140.86]
+2016-05-16 02:46:38,126 p=31212 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 02:46:38,128 p=31212 u=ivo |  ok: [192.168.140.84]
+2016-05-16 02:46:38,214 p=31212 u=ivo |  ok: [147.75.201.115]
+2016-05-16 02:46:39,318 p=31212 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:46:39,322 p=31212 u=ivo |  TASK [pull torpor image] *******************************************************
+2016-05-16 02:47:00,156 p=31212 u=ivo |  changed: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:47:06,635 p=31212 u=ivo |  changed: [dwill.soe.ucsc.edu]
+2016-05-16 02:47:09,849 p=31212 u=ivo |  changed: [nibbler.soe.ucsc.edu]
+2016-05-16 02:47:27,127 p=31212 u=ivo |  changed: [192.168.140.86]
+2016-05-16 02:47:27,333 p=31212 u=ivo |  changed: [192.168.140.84]
+2016-05-16 02:47:48,772 p=31212 u=ivo |  changed: [147.75.201.115]
+2016-05-16 02:47:48,777 p=31212 u=ivo |  TASK [download torpor script] **************************************************
+2016-05-16 02:47:49,013 p=31212 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 02:47:49,183 p=31212 u=ivo |  ok: [147.75.201.115]
+2016-05-16 02:47:49,492 p=31212 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 02:47:49,517 p=31212 u=ivo |  changed: [192.168.140.86]
+2016-05-16 02:47:50,331 p=31212 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:47:50,468 p=31212 u=ivo |  changed: [192.168.140.84]
+2016-05-16 02:47:50,473 p=31212 u=ivo |  TASK [push base.json to targets] ***********************************************
+2016-05-16 02:47:50,826 p=31212 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 02:47:50,857 p=31212 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 02:47:50,906 p=31212 u=ivo |  changed: [192.168.140.86]
+2016-05-16 02:47:50,915 p=31212 u=ivo |  changed: [192.168.140.84]
+2016-05-16 02:47:51,072 p=31212 u=ivo |  ok: [147.75.201.115]
+2016-05-16 02:47:53,774 p=31212 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 02:47:53,778 p=31212 u=ivo |  TASK [tune system] *************************************************************
+2016-05-16 02:54:39,030 p=31212 u=ivo |  fatal: [147.75.201.115]: FAILED! => {"changed": true, "cmd": "./torpor --categories=cpu --show-bench-results --max-cpu-quota=10000 --test-limit 15", "delta": "0:06:44.852688", "end": "2016-05-16 05:54:38.918342", "failed": true, "rc": 1, "start": "2016-05-16 05:47:54.065654", "stderr": "", "stdout": "", "stdout_lines": [], "warnings": []}
+2016-05-16 03:28:29,437 p=31212 u=ivo |  changed: [192.168.140.86]
+2016-05-16 03:31:50,997 p=31212 u=ivo |  changed: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 03:33:25,261 p=31212 u=ivo |  changed: [nibbler.soe.ucsc.edu]
+2016-05-16 03:33:49,780 p=31212 u=ivo |  changed: [192.168.140.84]
+2016-05-16 03:38:27,722 p=31212 u=ivo |  changed: [dwill.soe.ucsc.edu]
+2016-05-16 03:38:27,727 p=31212 u=ivo |  TASK [fetch parameter files] ***************************************************
+2016-05-16 03:38:27,985 p=31212 u=ivo |  changed: [dwill.soe.ucsc.edu]
+2016-05-16 03:38:28,288 p=31212 u=ivo |  changed: [nibbler.soe.ucsc.edu]
+2016-05-16 03:38:28,439 p=31212 u=ivo |  changed: [192.168.140.86]
+2016-05-16 03:38:28,470 p=31212 u=ivo |  changed: [192.168.140.84]
+2016-05-16 03:38:31,164 p=31212 u=ivo |  changed: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 03:38:31,168 p=31212 u=ivo |  TASK [fetch torpor log] ********************************************************
+2016-05-16 03:38:31,412 p=31212 u=ivo |  changed: [nibbler.soe.ucsc.edu]
+2016-05-16 03:38:31,421 p=31212 u=ivo |  changed: [192.168.140.86]
+2016-05-16 03:38:31,425 p=31212 u=ivo |  changed: [dwill.soe.ucsc.edu]
+2016-05-16 03:38:31,430 p=31212 u=ivo |  changed: [192.168.140.84]
+2016-05-16 03:38:33,557 p=31212 u=ivo |  changed: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 03:38:33,579 p=31212 u=ivo |  TASK [store facts about remotes] ***********************************************
+2016-05-16 03:38:33,963 p=31212 u=ivo |  failed: [nibbler.soe.ucsc.edu -> localhost] (item=147.75.201.115) => {"checksum": "20421152e8841faf810d499d5e47aba05ec70789", "failed": true, "item": "147.75.201.115", "msg": "Destination directory .********facts does not exist"}
+2016-05-16 03:38:34,309 p=31212 u=ivo |  failed: [nibbler.soe.ucsc.edu -> localhost] (item=nibbler.soe.ucsc.edu) => {"checksum": "03c679f7b9dcc9e2313cbd4bab26d0631ecdd630", "failed": true, "item": "nibbler.soe.ucsc.edu", "msg": "Destination directory .********facts does not exist"}
+2016-05-16 03:38:34,651 p=31212 u=ivo |  failed: [nibbler.soe.ucsc.edu -> localhost] (item=dwill.soe.ucsc.edu) => {"checksum": "1b92fbca708d1de431ef7524403db740b8ecbdd8", "failed": true, "item": "dwill.soe.ucsc.edu", "msg": "Destination directory .********facts does not exist"}
+2016-05-16 03:38:35,000 p=31212 u=ivo |  failed: [nibbler.soe.ucsc.edu -> localhost] (item=192.168.140.84) => {"checksum": "b11ab9cca97b85c6364452bb0595d7ec9c5f18bc", "failed": true, "item": "192.168.140.84", "msg": "Destination directory .********facts does not exist"}
+2016-05-16 03:38:35,345 p=31212 u=ivo |  failed: [nibbler.soe.ucsc.edu -> localhost] (item=192.168.140.86) => {"checksum": "9767392c9d6207be3206f78e8de2a3789793c606", "failed": true, "item": "192.168.140.86", "msg": "Destination directory .********facts does not exist"}
+2016-05-16 03:38:35,701 p=31212 u=ivo |  failed: [nibbler.soe.ucsc.edu -> localhost] (item=pc-c220m4-r04-02.wisc.cloudlab.us) => {"checksum": "73a5a3fd9902c0cde9325f0f8bba243cc840a2a4", "failed": true, "item": "pc-c220m4-r04-02.wisc.cloudlab.us", "msg": "Destination directory .********facts does not exist"}
+2016-05-16 03:38:35,730 p=31212 u=ivo |  skipping: [nibbler.soe.ucsc.edu] => (item=localhost) 
+2016-05-16 03:38:35,745 p=31212 u=ivo |  NO MORE HOSTS LEFT *************************************************************
+2016-05-16 03:38:35,745 p=31212 u=ivo |  PLAY RECAP *********************************************************************
+2016-05-16 03:38:35,746 p=31212 u=ivo |  147.75.201.115             : ok=9    changed=1    unreachable=0    failed=1   
+2016-05-16 03:38:35,746 p=31212 u=ivo |  192.168.140.84             : ok=11   changed=6    unreachable=0    failed=0   
+2016-05-16 03:38:35,746 p=31212 u=ivo |  192.168.140.86             : ok=11   changed=6    unreachable=0    failed=0   
+2016-05-16 03:38:35,746 p=31212 u=ivo |  dwill.soe.ucsc.edu         : ok=11   changed=4    unreachable=0    failed=0   
+2016-05-16 03:38:35,746 p=31212 u=ivo |  nibbler.soe.ucsc.edu       : ok=11   changed=4    unreachable=0    failed=1   
+2016-05-16 03:38:35,747 p=31212 u=ivo |  pc-c220m4-r04-02.wisc.cloudlab.us : ok=11   changed=4    unreachable=0    failed=0   
+2016-05-16 03:45:06,373 p=406 u=ivo |  PLAY [all] *********************************************************************
+2016-05-16 03:45:06,393 p=406 u=ivo |  TASK [setup] *******************************************************************
+2016-05-16 03:45:06,477 p=406 u=ivo |  fatal: [147.75.201.115]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh.", "unreachable": true}
+2016-05-16 03:45:07,488 p=406 u=ivo |  ok: [192.168.140.86]
+2016-05-16 03:45:07,520 p=406 u=ivo |  ok: [nibbler.soe.ucsc.edu]
+2016-05-16 03:45:07,620 p=406 u=ivo |  ok: [192.168.140.84]
+2016-05-16 03:45:08,818 p=406 u=ivo |  ok: [dwill.soe.ucsc.edu]
+2016-05-16 03:45:09,820 p=406 u=ivo |  ok: [pc-c220m4-r04-02.wisc.cloudlab.us]
+2016-05-16 03:45:09,827 p=406 u=ivo |  TASK [create result parameters folder if it don't exist] ***********************
+2016-05-16 03:45:09,997 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost]
+2016-05-16 03:45:10,002 p=406 u=ivo |  TASK [create facts folder if it don't exist] ***********************************
+2016-05-16 03:45:10,169 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost]
+2016-05-16 03:45:10,191 p=406 u=ivo |  TASK [store facts about remotes] ***********************************************
+2016-05-16 03:45:10,516 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost] => (item=147.75.201.115)
+2016-05-16 03:45:10,842 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost] => (item=nibbler.soe.ucsc.edu)
+2016-05-16 03:45:11,162 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost] => (item=dwill.soe.ucsc.edu)
+2016-05-16 03:45:11,490 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost] => (item=192.168.140.84)
+2016-05-16 03:45:11,818 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost] => (item=192.168.140.86)
+2016-05-16 03:45:12,145 p=406 u=ivo |  changed: [nibbler.soe.ucsc.edu -> localhost] => (item=pc-c220m4-r04-02.wisc.cloudlab.us)
+2016-05-16 03:45:12,162 p=406 u=ivo |  skipping: [nibbler.soe.ucsc.edu] => (item=localhost) 
+2016-05-16 03:45:12,176 p=406 u=ivo |  PLAY RECAP *********************************************************************
+2016-05-16 03:45:12,176 p=406 u=ivo |  147.75.201.115             : ok=0    changed=0    unreachable=1    failed=0   
+2016-05-16 03:45:12,176 p=406 u=ivo |  192.168.140.84             : ok=1    changed=0    unreachable=0    failed=0   
+2016-05-16 03:45:12,177 p=406 u=ivo |  192.168.140.86             : ok=1    changed=0    unreachable=0    failed=0   
+2016-05-16 03:45:12,177 p=406 u=ivo |  dwill.soe.ucsc.edu         : ok=1    changed=0    unreachable=0    failed=0   
+2016-05-16 03:45:12,177 p=406 u=ivo |  nibbler.soe.ucsc.edu       : ok=4    changed=3    unreachable=0    failed=0   
+2016-05-16 03:45:12,177 p=406 u=ivo |  pc-c220m4-r04-02.wisc.cloudlab.us : ok=1    changed=0    unreachable=0    failed=0   

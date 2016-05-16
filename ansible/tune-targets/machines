@@ -1,0 +1,10 @@
+# base machine is issdm-6
+
+# this is a packet.net type-0 machine
+147.75.201.115 ansible_ssh_user=root
+
+nibbler.soe.ucsc.edu
+dwill.soe.ucsc.edu
+192.168.140.84 ansible_ssh_user=issdm
+192.168.140.86 ansible_ssh_user=issdm
+pc-c220m4-r04-02.wisc.cloudlab.us ansible_ssh_user=ivotron

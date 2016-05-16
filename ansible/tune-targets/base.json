@@ -1,0 +1,22 @@
+[{
+  "id": "microbench",
+  "docker_flags": "--rm --cpuset-cpus=3 -e BENCHMARKS='c-ray crafty'",
+  "image_name": "ivotron/microbench",
+  "image_args": "",
+  "tests": [
+    {
+      "name": "crafty",
+      "class": "cpu",
+      "unit": "sec",
+      "result": "73.91",
+      "lower_is_better": true
+    },
+    {
+      "name": "c-ray",
+      "class": "cpu",
+      "unit": "sec",
+      "result": "75.11",
+      "lower_is_better": true
+    }
+  ]
+}]

@@ -1,0 +1,17 @@
+[    64s]    INFO opentuner.search.plugin.DisplayPlugin: tests=1, best {'cpu-quota': 10000}, cost time=1.6529, found by MonotonicSearch
+[   162s]    INFO opentuner.search.plugin.DisplayPlugin: tests=2, best {'cpu-quota': 7750}, cost time=1.4278, found by MonotonicSearch
+[   332s]    INFO opentuner.search.plugin.DisplayPlugin: tests=3, best {'cpu-quota': 5500}, cost time=1.0292, found by MonotonicSearch
+[   629s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'cpu-quota': 5500}, cost time=1.0292, found by MonotonicSearch
+[   757s]    INFO opentuner.search.plugin.DisplayPlugin: tests=5, best {'cpu-quota': 5500}, cost time=1.0292, found by MonotonicSearch
+[   959s]    INFO opentuner.search.plugin.DisplayPlugin: tests=6, best {'cpu-quota': 5500}, cost time=1.0292, found by MonotonicSearch
+[  1118s]    INFO opentuner.search.plugin.DisplayPlugin: tests=7, best {'cpu-quota': 5500}, cost time=1.0292, found by MonotonicSearch
+[  1294s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'cpu-quota': 5500}, cost time=1.0292, found by MonotonicSearch
+[  1461s]    INFO opentuner.search.plugin.DisplayPlugin: tests=9, best {'cpu-quota': 5570}, cost time=1.0120, found by MonotonicSearch
+[  1629s]    INFO opentuner.search.plugin.DisplayPlugin: tests=10, best {'cpu-quota': 5570}, cost time=1.0120, found by MonotonicSearch
+[  1797s]    INFO opentuner.search.plugin.DisplayPlugin: tests=11, best {'cpu-quota': 5570}, cost time=1.0120, found by MonotonicSearch
+[  1963s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'cpu-quota': 5588}, cost time=1.0067, found by MonotonicSearch
+[  2137s]    INFO opentuner.search.plugin.DisplayPlugin: tests=13, best {'cpu-quota': 5588}, cost time=1.0067, found by MonotonicSearch
+[  2303s]    INFO opentuner.search.plugin.DisplayPlugin: tests=14, best {'cpu-quota': 5588}, cost time=1.0067, found by MonotonicSearch
+[  2469s]    INFO opentuner.search.plugin.DisplayPlugin: tests=15, best {'cpu-quota': 5592}, cost time=1.0044, found by MonotonicSearch
+[  2635s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'cpu-quota': 5596}, cost time=1.0037, found by MonotonicSearch
+[  2635s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'cpu-quota': 5596}, cost time=1.0037, found by MonotonicSearch
