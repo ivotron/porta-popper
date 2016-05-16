@@ -1,85 +1,70 @@
+---
 - hosts: all
-  vars:
-    fldr: "{{ansible_env.HOME}}/var/porta/tune-targets"
-  pre_tasks:
-  - name: Assert preconditions
-    assert:
-      that:
-      - "'base' in groups"
-      - "'targets' in groups"
-      - "groups.base|length == 1"
-      - "groups.targets|length > 0"
-      - "benchmark_image is defined"
-      - "porta_flags is defined"
-      - "docker_flags is defined"
-  - name: Check targets kernel
-    assert:
-      that:
-      - "('3.13' in ansible_kernel or '3.19' in ansible_kernel or '4.2' in ansible_kernel or '4.4' in ansible_kernel)"
-    when:
-    - inventory_hostname in groups.targets
-  - name: Check that docker is installed
-    command: docker -v
-    register: result
-    failed_when: result.rc != 0
-
-
   tasks:
-# setup
-  - name: delete previous results
-    file: path={{fldr}} state=absent
-    ignore_errors: true
-  - name: create test folder inside porta
-    file: path={{fldr}}/tests state=directory mode=0755
-  - name: send porta
-    copy: src=porta dest={{fldr}} mode=0755
-  - name: pull porta image
-    command: docker pull ivotron/porta
-  - name: pull benchmark images
-    command: docker pull {{benchmark_image}}
 
-# get the base metrics
+# check preconditions
+  - name: check that docker is installed
+    package:
+      name: docker-engine
+      state: present
+
   - name: check if base.json file exists locally
-    local_action: stat path="base.json"
+    local_action:
+      module: stat
+      path: base.json
     run_once: true
-    sudo: false
-    register: base_metrics
-  - name: generate base.json
-    shell: docker run {{docker_flags}} {{benchmark_image}} > base.json chdir={{fldr}}
-    when:
-    - inventory_hostname in groups.base
-    - not base_metrics.stat.exists
-  - name: get base.json metrics for host in base group
-    fetch: src={{fldr}}/base.json dest=. flat=yes
-    when:
-    - inventory_hostname in groups.base
-    - not base_metrics.stat.exists
+    register: basefile
+    failed_when: not basefile.stat.exists
+
+  - name: create result parameters folder if it don't exist
+    file:
+      path: ./parameters
+      state: directory
+      mode: 0755
+
+  - name: create facts folder if it don't exist
+    file:
+      path: ./facts
+      state: directory
+      mode: 0755
 
 # tune targets
+  - name: pull torpor image
+    shell: docker pull ivotron/torpor
+
+  - name: download torpor script
+    get_url:
+      url: https://raw.githubusercontent.com/ivotron/torpor/master/torpor
+      dest: ./torpor
+      mode: 0755
+
   - name: push base.json to targets
-    copy: src=base.json dest={{fldr}}/base.json mode=0644
-    when:
-    - inventory_hostname in groups.targets
+    copy:
+      src: ./base.json
+      dest: ./base.json
+      mode: 0644
+
   - name: tune system
-    command: ./porta {{porta_flags}} --docker-flags "{{docker_flags}}" chdir={{fldr}}
-    when:
-    - inventory_hostname in groups.targets
-  - name: fetch parameter files to introspect
-    fetch: src={{fldr}}/parameters.json dest=parameters/{{inventory_hostname}}.json flat=yes
-    when:
-    - inventory_hostname in groups.targets
-  - name: fetch porta log
-    fetch: src={{fldr}}/porta.log dest=parameters/{{inventory_hostname}}_porta.log flat=yes
-    when:
-    - inventory_hostname in groups.targets
+    shell: ./torpor {{ torpor_flags }}
+
+  - name: fetch parameter files
+    fetch:
+      src: ./parameters.json
+      dest: ./parameters/{{inventory_hostname}}.json
+      flat: true
+
+  - name: fetch torpor log
+    fetch:
+      src: ./torpor.log
+      dest: ./parameters/{{inventory_hostname}}_torpor.log
+      flat: yes
 
 # store facts
-  - name: create facts folder
-    local_action: file path=facts state=directory mode=0755
-    run_once: true
-    sudo: false
   - name: store facts about remotes
-    local_action: copy content="{{ hostvars[item] | to_nice_json }}" dest=./facts/{{ item }}.json
+    local_action:
+      module: copy
+      content: '{{ hostvars[item] | to_nice_json }}'
+      dest: ./facts/{{ item }}.json
     run_once: true
-    sudo: false
-    with_items: groups['all']
+    with_items: '{{ groups.all }}'
+    when: '{{ item != "localhost" }}'
