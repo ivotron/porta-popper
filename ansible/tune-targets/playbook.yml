@@ -3,11 +3,6 @@
   tasks:
 
 # check preconditions
-  - name: check if docker is statically linked
-    command: ldd /usr/bin/docker
-    register: docker_ldd
-    ignore_errors: true
-
   - name: ensure docker-engine is installed
     package:
       name: '{{ item }}'
@@ -16,7 +11,11 @@
     with_items:
     - docker-engine
     - curl
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
+
+  - name: check if docker is statically linked
+    command: ldd /usr/bin/docker
+    register: docker_ldd
+    ignore_errors: true
 
   - name: stop the docker daemon
     service:
