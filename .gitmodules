@@ -1,3 +1,6 @@
 [submodule "docker/jupyter"]
 	path = docker/jupyter
 	url = https://github.com/ivotron/docker-jupyter-pd-mpl-h5.git
+[submodule "ansible/vendor/baseliner"]
+	path = ansible/vendor/baseliner
+	url = https://github.com/ivotron/baseliner

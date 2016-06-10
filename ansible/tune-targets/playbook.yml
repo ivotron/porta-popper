@@ -3,45 +3,7 @@
   tasks:
 
 # check preconditions
-  - name: ensure docker-engine is installed
-    package:
-      name: '{{ item }}'
-      state: present
-    become: true
-    with_items:
-    - docker-engine
-    - curl
-
-  - name: check if docker is statically linked
-    command: ldd /usr/bin/docker
-    register: docker_ldd
-    ignore_errors: true
-
-  - name: stop the docker daemon
-    service:
-      name: docker
-      state: stopped
-    become: true
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
-
-  - name: get statically linked docker tarball
-    command: curl -O https://get.docker.com/builds/Linux/x86_64/docker-latest.tgz chdir=/tmp
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
-
-  - name: untar statically linked docker
-    command: tar xfz docker-latest.tgz chdir=/tmp
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
-
-  - name: install statically linked docker
-    shell: cp /tmp/docker/* /usr/bin/
-    become: true
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
-
-  - name: start the docker daemon
-    service:
-      name: docker
-      state: started
-    become: true
+  - include: ../common/check_preconditions.yml
 
   - name: check if base.json file exists locally
     local_action:
@@ -55,14 +17,6 @@
     local_action:
       module: file
       path: ./parameters
-      state: directory
-      mode: 0755
-    run_once: true
-
-  - name: create facts folder if it don't exist
-    local_action:
-      module: file
-      path: ./facts
       state: directory
       mode: 0755
     run_once: true
@@ -86,11 +40,13 @@
   - name: tune system
     shell: ./torpor {{ torpor_flags }}
 
+# get results
   - name: fetch parameter files
     fetch:
       src: ./parameters.json
       dest: ./parameters/{{inventory_hostname}}.json
       flat: true
+    # TODO: merge parameters in a single ./parameters.json file
 
   - name: fetch torpor log
     fetch:
@@ -98,12 +54,4 @@
       dest: ./parameters/{{inventory_hostname}}_torpor.log
       flat: yes
 
-# store facts
-  - name: store facts about remotes
-    local_action:
-      module: copy
-      content: '{{ hostvars[item] | to_nice_json }}'
-      dest: ./facts/{{ item }}.json
-    run_once: true
-    with_items: '{{ groups.all }}'
-    when: '{{ item != "localhost" }}'
+  - include: ../common/store_facts.yml

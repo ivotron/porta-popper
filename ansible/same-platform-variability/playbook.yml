@@ -5,10 +5,6 @@
 # check preconditions
   - include: ../common/check_preconditions.yml install_statically_linked_docker='no'
 
-  - name: make sure base and target groups exist
-    assert:
-      that: 'groups.base is defined and groups.targets is defined'
-
 # execute benchmarks without constraints
   - name: define no limits
     set_fact:
@@ -23,7 +19,7 @@
     run_once: true
 
 # execute benchmarks with constraints only on the targets
-- hosts: targets
+- hosts: all
   pre_tasks:
   - name: define limits for each machine
     set_fact:
