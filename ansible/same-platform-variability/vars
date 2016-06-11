@@ -1,0 +1,29 @@
+---
+docker_flags_global: '--rm'
+docker_flags_with_limits:
+ issdm-0:  '--cpu-quota=200000 --cpu-period=100000'
+ issdm-1:  '--cpu-quota=200000 --cpu-period=100000'
+ issdm-3:  '--cpu-quota=200000 --cpu-period=100000'
+ issdm-6:  '--cpu-quota=200000 --cpu-period=100000'
+ issdm-11: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-14: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-16: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-17: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-24: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-27: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-29: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-34: '--cpu-quota=200000 --cpu-period=100000'
+ issdm-40: '--cpu-quota=200000 --cpu-period=100000'
+benchmarks:
+- id: stressng
+  docker_flags: '-e NUM_WORKERS=4 -e TIMEOUT=30 -e BENCHMARKS="matrix-methods"'
+  image_name: 'ivotron/stress-ng'
+  image_args: ''
+
+#- 'ivotron/cloverleaf'
+#- 'ivotron/comd'
+#- 'ivotron/microbench'
+#- 'ivotron/sequoia'
+#- 'ivotron/stress-ng'
+#- 'ivotron/sysbench'
+#- 'ivotron/unixbench'

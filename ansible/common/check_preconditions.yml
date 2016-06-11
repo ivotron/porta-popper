@@ -1,43 +1,56 @@
 ---
   - name: ensure docker-engine is installed
     package:
-      name: '{{ item }}'
+      name: 'docker-engine'
       state: present
     become: true
     with_items:
     - docker-engine
     - curl
 
+  - name: determine if we should check whether docker binary is staitcally linked
+    set_fact:
+      install_static_docker: '{{ install_statically_linked_docker | bool }}'
+
   - name: check if docker is statically linked
     command: ldd /usr/bin/docker
     register: docker_ldd
     ignore_errors: true
+    when: install_static_docker
 
   - name: determine if we should install statically linked docker daemon
     set_fact:
       install_static_docker: '
-        "not a dynamic executable" not in docker_ldd.stdout and
-        install_statically_linked_docker | bool'
+        {{ install_static_docker }} and
+        "not a dynamic executable" not in docker_ldd.stdout'
+    when: install_staitc_docker
+
+  - name: ensure docker-engine is installed
+    package:
+      name: 'curl'
+      state: present
+    become: true
+    when: install_static_docker
 
   - name: stop the docker daemon
     service:
       name: docker
       state: stopped
     become: true
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
+    when: install_static_docker
 
   - name: get statically linked docker tarball
     command: curl -O https://get.docker.com/builds/Linux/x86_64/docker-latest.tgz chdir=/tmp
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
+    when: install_static_docker
 
   - name: untar statically linked docker
     command: tar xfz docker-latest.tgz chdir=/tmp
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
+    when: install_static_docker
 
   - name: install statically linked docker
     shell: cp /tmp/docker/* /usr/bin/
     become: true
-    when: '"not a dynamic executable" not in docker_ldd.stdout'
+    when: install_static_docker
 
   - name: start the docker daemon
     service:
