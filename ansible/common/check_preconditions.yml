@@ -8,7 +8,7 @@
     - docker-engine
     - curl
 
-  - name: determine if we should check whether docker binary is staitcally linked
+  - name: determine if we should check whether docker binary is statically linked
     set_fact:
       install_static_docker: '{{ install_statically_linked_docker | bool }}'
 
@@ -23,7 +23,7 @@
       install_static_docker: '
         {{ install_static_docker }} and
         "not a dynamic executable" not in docker_ldd.stdout'
-    when: install_staitc_docker
+    when: install_static_docker
 
   - name: ensure docker-engine is installed
     package:
