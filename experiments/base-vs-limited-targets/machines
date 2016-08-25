@@ -1,0 +1,8 @@
+[base]
+issdm-12 ansible_ssh_user=issdm
+
+[targets]
+dwill.soe.ucsc.edu
+nibbler.soe.ucsc.edu
+192.168.140.81 ansible_ssh_user=issdm
+192.168.140.85 ansible_ssh_user=issdm

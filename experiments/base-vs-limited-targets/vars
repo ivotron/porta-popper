@@ -1,0 +1,17 @@
+---
+repetitions: 3
+docker_flags_global: '--rm'
+docker_flags_with_limits:
+ nibbler: '--cpu-quota=6291 --cpu-period=10000'
+ dwill: '--cpu-quota=3812 --cpu-period=10000'
+ rackform1: '--cpu-quota=6263 --cpu-period=10000'
+ pl3: '--cpu-quota=4794 --cpu-period=10000'
+benchmarks:
+- id: microbench
+  docker_flags: "--cpuset-cpus=3"
+  image_name: 'ivotron/microbench'
+  image_args: ''
+- id: stressng
+  docker_flags: "--cpuset-cpus=3"
+  image_name: 'ivotron/stress-ng'
+  image_args: ''
