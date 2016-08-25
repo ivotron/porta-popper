@@ -1,3 +1,6 @@
 [submodule "experiments/vendor/baseliner"]
 	path = experiments/vendor/baseliner
 	url = https://github.com/ivotron/baseliner
+[submodule ".vendor/torpor"]
+	path = .vendor/torpor
+	url = https://github.com/ivotron/torpor
