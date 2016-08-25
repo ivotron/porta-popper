@@ -15,7 +15,7 @@
       docker_flags_machine: '{{ {} | combine({ansible_hostname: ""}) }}'
 
   roles:
-  - run-bench
+  - {role: run-bench, iterations: 1}
 
   post_tasks:
   - name: store results for unconstrained scenario
@@ -30,7 +30,7 @@
       docker_flags_machine: '{{ docker_flags_with_limits }}'
 
   roles:
-  - run-bench
+  - {role: run-bench, iterations: '{{ repetitions }}'}
 
   post_tasks:
   - name: store results for constrained scenario
@@ -42,14 +42,6 @@
   tasks:
   - name: merge results
     command: ./merge_results
-    run_once: true
-
-  - name: obtain normalized results
-    shell: >
-      docker run --rm \
-         -v `pwd`:/data \
-         --entrypoint=/data/normalize.py \
-         juptyer/jupyter-pd-mpl-h5 {{ groups.base }}
     run_once: true
 
   - include: ../common/store_facts.yml
