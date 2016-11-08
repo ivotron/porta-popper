@@ -1,0 +1,4 @@
+code:
+- git@github.com:ivotron/membwcg
+run: docker
+validate: docker
