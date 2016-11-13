@@ -1,6 +1,9 @@
 [submodule "experiments/vendor/baseliner"]
-	path = experiments/vendor/baseliner
+	path = .vendor/baseliner
 	url = git@github.com:ivotron/baseliner
 [submodule ".vendor/torpor"]
 	path = .vendor/torpor
 	url = git@github.com:ivotron/torpor
+[submodule ".vendor/docker-bench"]
+	path = .vendor/docker-bench
+	url = git@github.com:ivotron/docker-bench
