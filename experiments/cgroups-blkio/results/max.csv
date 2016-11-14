@@ -1,0 +1,7 @@
+mode,bs,benchmark,job,read_bw,write_bw
+randread,256k,"fio","randread-sdb-256k-seq",17509,0
+randread,4096k,"fio","randread-sdb-4096k-seq",71874,0
+randread,4k,"fio","randread-sdb-4k-seq",329,0
+randwrite,256k,"fio","randwrite-sdb-256k-seq",0,32035
+randwrite,4096k,"fio","randwrite-sdb-4096k-seq",0,78589
+randwrite,4k,"fio","randwrite-sdb-4k-seq",0,732
