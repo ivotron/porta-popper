@@ -1,0 +1,4 @@
+- benchmark: 'fio'
+- job: '.jobs | .[] | .jobname'
+- read_bw: '.jobs | .[] | .read.bw'
+- write_bw: '.jobs | .[] | .write.bw'
