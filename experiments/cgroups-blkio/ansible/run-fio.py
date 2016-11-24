@@ -6,7 +6,7 @@ from subprocess import check_output as sh
 
 if len(sys.argv) != 8:
     print("""Usage:
-  1 - maxbw list (comma-separated; one per mode [4])
+  1 - maxbw list (comma-separated; one per mode: read,write,randread,randwrite)
   2 - modes list (comma-separated; one per container)
   3 - limits list (comma-separated; one per container)
   4 - blksize
@@ -24,6 +24,12 @@ output_folder = sys.argv[7]
 
 if len(maxbw) != 4:
     raise Exception("Expecting maxbw list of size 4")
+
+sum = 0
+for limit in limits:
+    sum += limit
+if sum > 100:
+    raise Exception("Sum of all limits should be <= 100")
 
 sh(['docker', 'pull', 'ivotron/fio'])
 
@@ -43,8 +49,27 @@ args = "-s -d {} -r {} -b {}k".format(device, runtime, bs)
 # create containers first, to minimize startup costs
 cnames = []
 k = 1
-for mode, limit in zip(modes, limits):
-    results_folder = "{}/mode/{}/limit_kb/{}".format(output_folder, mode, limit)
+for mode, limit_percentage in zip(modes, limits):
+
+    if limit_percentage < 1 or limit_percentage > 100:
+        raise Exception("Limit should be a percentage of max bandwidth")
+
+    # get bandwidth w.r.t. maxbw
+    if mode == "read":
+        limitkb = (limit_percentage / 100.0) * maxbw[0]
+    elif mode == "write":
+        limitkb = (limit_percentage / 100.0) * maxbw[1]
+    elif mode == "randread":
+        limitkb = (limit_percentage / 100.0) * maxbw[2]
+    elif mode == "randwrite":
+        limitkb = (limit_percentage / 100.0) * maxbw[3]
+    else:
+        raise Exception("Unknown mode " + mode)
+
+    # round
+    limitkb = int(limitkb)
+
+    results_folder = "{}/mode/{}/limit/{}".format(output_folder, mode, limitkb)
     cname = "fio-" + k
     cmd = (
       "docker create"
@@ -55,7 +80,7 @@ for mode, limit in zip(modes, limits):
       " --device-read-bps ${2}:${3}kb "
       " --volume {4}:/results "
       " {5} {6} -m {8}"
-    ).format(flags, cname, device, limit, results_folder, img, args, mode)
+    ).format(flags, cname, device, limitkb, results_folder, img, args, mode)
     sh(cmd, shell=True)
     cnames += [cname]
     k += 1
