@@ -1,20 +1,33 @@
 ---
-parameters:
-  limits:
-  - "20,20,60"
-  - "25,25,50"
-  - "10,10,80"
-  - "30,30,40"
-  - "20,20,20"
-  - "30,30,30"
-  blksize_kb:
-  - 4
-  - 256
-  - 4096
-
 benchmarks:
 - name: fio
   script: run-fio.py
-  args: '{{ maxbw }} write,read,randread {{ params.limits }} {{ params.blksize_kb }} /dev/sdb 60 /tmp/results'
-  get:
+  args: '{{ maxbw }} write,read,randread $limits_pct $blksize_kb /dev/sdb 120 /tmp/results'
+  fetch:
   - /tmp/results
+  parameters:
+    limits_pct:
+    - "60,20,20"
+    - "20,60,20"
+    - "20,20,60"
+    - "50,25,25"
+    - "25,50,25"
+    - "25,25,50"
+    - "80,10,10"
+    - "10,80,10"
+    - "10,10,80"
+    - "40,30,30"
+    - "30,40,30"
+    - "30,30,40"
+    - "40,20,20"
+    - "20,40,20"
+    - "20,20,40"
+    - "40,25,25"
+    - "25,40,25"
+    - "25,25,40"
+    - "20,20,20"
+    - "30,30,30"
+    blksize_kb:
+    - 4
+    - 256
+    - 4096

@@ -1,0 +1,535 @@
+{
+    "ansible_all_ipv4_addresses": [
+        "172.17.0.1", 
+        "192.168.140.245"
+    ], 
+    "ansible_all_ipv6_addresses": [
+        "fe80::42:87ff:fe60:e892", 
+        "fe80::230:48ff:fe78:d61a"
+    ], 
+    "ansible_architecture": "x86_64", 
+    "ansible_bios_date": "09/24/2009", 
+    "ansible_bios_version": "080014", 
+    "ansible_check_mode": false, 
+    "ansible_cmdline": {
+        "BOOT_IMAGE": "/boot/vmlinuz-3.13.0-88-generic", 
+        "nomodeset": true, 
+        "ro": true, 
+        "root": "UUID=071cadf0-0e15-4d08-842c-e3fd05c0e15e"
+    }, 
+    "ansible_date_time": {
+        "date": "2016-11-27", 
+        "day": "27", 
+        "epoch": "1480290587", 
+        "hour": "15", 
+        "iso8601": "2016-11-27T23:49:47Z", 
+        "iso8601_basic": "20161127T154947874681", 
+        "iso8601_basic_short": "20161127T154947", 
+        "iso8601_micro": "2016-11-27T23:49:47.874871Z", 
+        "minute": "49", 
+        "month": "11", 
+        "second": "47", 
+        "time": "15:49:47", 
+        "tz": "PST", 
+        "tz_offset": "-0800", 
+        "weekday": "Sunday", 
+        "weekday_number": "0", 
+        "weeknumber": "47", 
+        "year": "2016"
+    }, 
+    "ansible_default_ipv4": {
+        "address": "192.168.140.245", 
+        "alias": "eth1", 
+        "broadcast": "192.168.140.255", 
+        "gateway": "192.168.140.2", 
+        "interface": "eth1", 
+        "macaddress": "00:30:48:78:d6:1a", 
+        "mtu": 1500, 
+        "netmask": "255.255.255.0", 
+        "network": "192.168.140.0", 
+        "type": "ether"
+    }, 
+    "ansible_default_ipv6": {}, 
+    "ansible_devices": {
+        "fd0": {
+            "holders": [], 
+            "host": "", 
+            "model": null, 
+            "partitions": {}, 
+            "removable": "1", 
+            "rotational": "1", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "8", 
+            "sectorsize": "512", 
+            "size": "4.00 KB", 
+            "support_discard": "0", 
+            "vendor": null
+        }, 
+        "sda": {
+            "holders": [], 
+            "host": "IDE interface: NVIDIA Corporation MCP55 SATA Controller (rev a3)", 
+            "model": "ST3250620NS", 
+            "partitions": {
+                "sda1": {
+                    "holders": [], 
+                    "sectors": "471619584", 
+                    "sectorsize": 512, 
+                    "size": "224.89 GB", 
+                    "start": "2048", 
+                    "uuid": "071cadf0-0e15-4d08-842c-e3fd05c0e15e"
+                }, 
+                "sda2": {
+                    "holders": [], 
+                    "sectors": "2", 
+                    "sectorsize": 512, 
+                    "size": "1.00 KB", 
+                    "start": "471623678", 
+                    "uuid": null
+                }, 
+                "sda5": {
+                    "holders": [], 
+                    "sectors": "16773120", 
+                    "sectorsize": 512, 
+                    "size": "8.00 GB", 
+                    "start": "471623680", 
+                    "uuid": "5b6fb25f-0c99-48ba-b516-013d094c8397"
+                }
+            }, 
+            "removable": "0", 
+            "rotational": "1", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "488397168", 
+            "sectorsize": "512", 
+            "size": "232.89 GB", 
+            "support_discard": "0", 
+            "vendor": "ATA"
+        }, 
+        "sdb": {
+            "holders": [], 
+            "host": "IDE interface: NVIDIA Corporation MCP55 SATA Controller (rev a3)", 
+            "model": "ST3250620NS", 
+            "partitions": {}, 
+            "removable": "0", 
+            "rotational": "1", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "488397168", 
+            "sectorsize": "512", 
+            "size": "232.89 GB", 
+            "support_discard": "0", 
+            "vendor": "ATA"
+        }, 
+        "sdc": {
+            "holders": [], 
+            "host": "IDE interface: NVIDIA Corporation MCP55 SATA Controller (rev a3)", 
+            "model": "ST3250620NS", 
+            "partitions": {}, 
+            "removable": "0", 
+            "rotational": "1", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "488397168", 
+            "sectorsize": "512", 
+            "size": "232.89 GB", 
+            "support_discard": "0", 
+            "vendor": "ATA"
+        }, 
+        "sdd": {
+            "holders": [], 
+            "host": "IDE interface: NVIDIA Corporation MCP55 SATA Controller (rev a3)", 
+            "model": "ST3250620NS", 
+            "partitions": {}, 
+            "removable": "0", 
+            "rotational": "1", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "488397168", 
+            "sectorsize": "512", 
+            "size": "232.89 GB", 
+            "support_discard": "0", 
+            "vendor": "ATA"
+        }, 
+        "sde": {
+            "holders": [], 
+            "host": "IDE interface: NVIDIA Corporation MCP55 SATA Controller (rev a3)", 
+            "model": "INTEL SSDSC2MH25", 
+            "partitions": {}, 
+            "removable": "0", 
+            "rotational": "0", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "0", 
+            "sectorsize": "512", 
+            "size": "0.00 Bytes", 
+            "support_discard": "512", 
+            "vendor": "ATA"
+        }, 
+        "sr0": {
+            "holders": [], 
+            "host": "IDE interface: NVIDIA Corporation MCP55 IDE (rev a1)", 
+            "model": "DVD-ROM SR-8178", 
+            "partitions": {}, 
+            "removable": "1", 
+            "rotational": "1", 
+            "sas_address": null, 
+            "sas_device_handle": null, 
+            "scheduler_mode": "deadline", 
+            "sectors": "2097151", 
+            "sectorsize": "512", 
+            "size": "1024.00 MB", 
+            "support_discard": "0", 
+            "vendor": "MATSHITA"
+        }
+    }, 
+    "ansible_distribution": "Ubuntu", 
+    "ansible_distribution_major_version": "12", 
+    "ansible_distribution_release": "precise", 
+    "ansible_distribution_version": "12.04", 
+    "ansible_dns": {
+        "nameservers": [
+            "192.168.140.2"
+        ]
+    }, 
+    "ansible_docker0": {
+        "active": false, 
+        "device": "docker0", 
+        "features": {}, 
+        "id": "8000.02428760e892", 
+        "interfaces": [], 
+        "ipv4": {
+            "address": "172.17.0.1", 
+            "broadcast": "global", 
+            "netmask": "255.255.0.0", 
+            "network": "172.17.0.0"
+        }, 
+        "ipv6": [
+            {
+                "address": "fe80::42:87ff:fe60:e892", 
+                "prefix": "64", 
+                "scope": "link"
+            }
+        ], 
+        "macaddress": "02:42:87:60:e8:92", 
+        "mtu": 1500, 
+        "promisc": false, 
+        "stp": false, 
+        "type": "bridge"
+    }, 
+    "ansible_domain": "", 
+    "ansible_env": {
+        "HOME": "/home/issdm", 
+        "LANG": "en_US.UTF-8", 
+        "LOGNAME": "issdm", 
+        "MAIL": "/var/mail/issdm", 
+        "PATH": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games", 
+        "PWD": "/home/issdm", 
+        "SHELL": "/bin/bash", 
+        "SHLVL": "1", 
+        "SSH_CLIENT": "192.168.140.2 35045 22", 
+        "SSH_CONNECTION": "192.168.140.2 35045 192.168.140.245 22", 
+        "SSH_TTY": "/dev/pts/0", 
+        "TERM": "xterm", 
+        "USER": "issdm", 
+        "XDG_SESSION_COOKIE": "4e3d8e98697bb8feab65d67e0000030a-1480290584.531778-284814337", 
+        "_": "/bin/sh"
+    }, 
+    "ansible_eth0": {
+        "active": false, 
+        "device": "eth0", 
+        "features": {}, 
+        "macaddress": "00:30:48:42:bc:cd", 
+        "module": "e1000", 
+        "mtu": 1500, 
+        "pciid": "0000:01:07.0", 
+        "promisc": false, 
+        "type": "ether"
+    }, 
+    "ansible_eth1": {
+        "active": true, 
+        "device": "eth1", 
+        "features": {}, 
+        "ipv4": {
+            "address": "192.168.140.245", 
+            "broadcast": "192.168.140.255", 
+            "netmask": "255.255.255.0", 
+            "network": "192.168.140.0"
+        }, 
+        "ipv6": [
+            {
+                "address": "fe80::230:48ff:fe78:d61a", 
+                "prefix": "64", 
+                "scope": "link"
+            }
+        ], 
+        "macaddress": "00:30:48:78:d6:1a", 
+        "module": "forcedeth", 
+        "mtu": 1500, 
+        "pciid": "0000:00:08.0", 
+        "promisc": false, 
+        "speed": 1000, 
+        "type": "ether"
+    }, 
+    "ansible_eth2": {
+        "active": false, 
+        "device": "eth2", 
+        "features": {}, 
+        "macaddress": "00:30:48:78:d6:1b", 
+        "module": "forcedeth", 
+        "mtu": 1500, 
+        "pciid": "0000:00:09.0", 
+        "promisc": false, 
+        "speed": 4294967295, 
+        "type": "ether"
+    }, 
+    "ansible_fips": false, 
+    "ansible_form_factor": "Desktop", 
+    "ansible_fqdn": "issdm-16", 
+    "ansible_gather_subset": [
+        "hardware", 
+        "network", 
+        "virtual"
+    ], 
+    "ansible_hostname": "issdm-16", 
+    "ansible_interfaces": [
+        "lo", 
+        "docker0", 
+        "eth2", 
+        "eth1", 
+        "eth0"
+    ], 
+    "ansible_kernel": "3.13.0-88-generic", 
+    "ansible_lo": {
+        "active": true, 
+        "device": "lo", 
+        "features": {}, 
+        "ipv4": {
+            "address": "127.0.0.1", 
+            "broadcast": "host", 
+            "netmask": "255.0.0.0", 
+            "network": "127.0.0.0"
+        }, 
+        "ipv6": [
+            {
+                "address": "::1", 
+                "prefix": "128", 
+                "scope": "host"
+            }
+        ], 
+        "mtu": 65536, 
+        "promisc": false, 
+        "type": "loopback"
+    }, 
+    "ansible_lsb": {
+        "codename": "precise", 
+        "description": "Ubuntu 12.04.4 LTS", 
+        "id": "Ubuntu", 
+        "major_release": "12", 
+        "release": "12.04"
+    }, 
+    "ansible_machine": "x86_64", 
+    "ansible_machine_id": "4e3d8e98697bb8feab65d67e0000030a", 
+    "ansible_memfree_mb": 453, 
+    "ansible_memory_mb": {
+        "nocache": {
+            "free": 7086, 
+            "used": 897
+        }, 
+        "real": {
+            "free": 453, 
+            "total": 7983, 
+            "used": 7530
+        }, 
+        "swap": {
+            "cached": 0, 
+            "free": 8189, 
+            "total": 8189, 
+            "used": 0
+        }
+    }, 
+    "ansible_memtotal_mb": 7983, 
+    "ansible_mounts": [
+        {
+            "device": "/dev/sda1", 
+            "fstype": "ext4", 
+            "mount": "/", 
+            "options": "rw,errors=remount-ro", 
+            "size_available": 147474014208, 
+            "size_total": 237544407040, 
+            "uuid": "N/A"
+        }
+    ], 
+    "ansible_nodename": "issdm-16", 
+    "ansible_os_family": "Debian", 
+    "ansible_pkg_mgr": "apt", 
+    "ansible_processor": [
+        "AuthenticAMD", 
+        "Dual-Core AMD Opteron(tm) Processor 2212", 
+        "AuthenticAMD", 
+        "Dual-Core AMD Opteron(tm) Processor 2212", 
+        "AuthenticAMD", 
+        "Dual-Core AMD Opteron(tm) Processor 2212", 
+        "AuthenticAMD", 
+        "Dual-Core AMD Opteron(tm) Processor 2212"
+    ], 
+    "ansible_processor_cores": 2, 
+    "ansible_processor_count": 2, 
+    "ansible_processor_threads_per_core": 1, 
+    "ansible_processor_vcpus": 4, 
+    "ansible_product_name": "H8DMR-82", 
+    "ansible_product_serial": "NA", 
+    "ansible_product_uuid": "NA", 
+    "ansible_product_version": "1234567890", 
+    "ansible_python": {
+        "executable": "/usr/bin/python", 
+        "has_sslcontext": false, 
+        "type": "CPython", 
+        "version": {
+            "major": 2, 
+            "micro": 3, 
+            "minor": 7, 
+            "releaselevel": "final", 
+            "serial": 0
+        }, 
+        "version_info": [
+            2, 
+            7, 
+            3, 
+            "final", 
+            0
+        ]
+    }, 
+    "ansible_python_version": "2.7.3", 
+    "ansible_selinux": false, 
+    "ansible_service_mgr": "upstart", 
+    "ansible_ssh_host_key_dsa_public": "AAAAB3NzaC1kc3MAAACBAO5AO840Ud2HjPAMf+j54Sw6p0paPZue3ijyUj+2Vhzotcoz5kP5qk/jv7MDwW2/FJmfxXm753HCa9O65AFSkZUjkdA79HA6agcMJ6fuubX2BbrNGEh5DczWBT+aHyRAd7E7GYQ3ydzdvKZRhKhdSbPotBkUXh/LMsnLQ5o6pjTRAAAAFQCfZE14z4ioav3l+Sus9xAFEcABSwAAAIB1vZfsnDKKJz9lbbVR+aEQBPWvuPBiZkCSpJ/dhUMYxRlIM9+ytYMYmDxP9GRm9DFo7gAsdzis45YkyRv++xfR7zZdm/+Tqfbwy4YgTiJGJbbJMBgr8erTDy98HH1ASfvvpupFqs1z5bkzA+rTWdWMveL1fuX+hBJ2IVdmX7gACQAAAIBmn1w4yNiqLHvk2hcNHgUpFgheahSTJtHpnH+PnPIo9PIjQY1OfuiMVcakJ7Ddyp1K4LTKdWZBpjTPw650WypAAhkLgwkHBY+Lqf6UjScZC3cgoyjMvY4M2Z4bR2z91nlwGT78oEW87YHyiofklr/vjkERm/nvNGrCOyZSDEcMcw==", 
+    "ansible_ssh_host_key_ecdsa_public": "AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBKgm6VcXCjr+GdjVGC9odqBN3aYOekHsvn6WgnWshRRwNoAKYPK/RZjdNsaenbfVlU1qHOAjkDMM9U+4FonahyM=", 
+    "ansible_ssh_host_key_rsa_public": "AAAAB3NzaC1yc2EAAAADAQABAAABAQCnCOU6NTWPt2LOXe6213fr/XGxkjGMf3HNg43Q6aITpTonpKkU/f+xlKv78cI8VoT3tY/tAbmDSpbeD8mTnv7sDsyKvZgbeqpYXmp/SQT+QgzsT0fKjaFS5A+QmaVsf9Zcg+D92ev2hsWC5C+mbhEiJVyIlvGRIzrf3aY2eYsCtFtMjwpgHKXV5O69WIgRQwKROBRhON8tCVPM8/aC4JQlWKMZOS/dG2NE4a06MQosU7iurvEy7KFgm/mLjyAUj8otWI8kxqwXkZ1xiYPV3qKzORvAwq2scifGDT4E2UVuguzd79ctCn0wkiQj9bHOTcgHpzj6cVhTll3pUd4kUfVr", 
+    "ansible_swapfree_mb": 8189, 
+    "ansible_swaptotal_mb": 8189, 
+    "ansible_system": "Linux", 
+    "ansible_system_vendor": "Supermicro", 
+    "ansible_uptime_seconds": 14091877, 
+    "ansible_user": "issdm", 
+    "ansible_user_dir": "/home/issdm", 
+    "ansible_user_gecos": "issdm,,,", 
+    "ansible_user_gid": 1000, 
+    "ansible_user_id": "issdm", 
+    "ansible_user_shell": "/bin/bash", 
+    "ansible_user_uid": 1000, 
+    "ansible_userspace_architecture": "x86_64", 
+    "ansible_userspace_bits": "64", 
+    "ansible_version": {
+        "full": "2.2.0.0", 
+        "major": 2, 
+        "minor": 2, 
+        "revision": 0, 
+        "string": "2.2.0.0"
+    }, 
+    "ansible_virtualization_role": "NA", 
+    "ansible_virtualization_type": "NA", 
+    "benchmarks": [
+        {
+            "args": "26194,15397,299,241 write,read,randread $limits_pct $blksize_kb /dev/sdb 120 /tmp/results", 
+            "fetch": [
+                "/tmp/results"
+            ], 
+            "name": "fio", 
+            "parameters": {
+                "blksize_kb": [
+                    4, 
+                    256, 
+                    4096
+                ], 
+                "limits_pct": [
+                    "60,20,20", 
+                    "20,60,20", 
+                    "20,20,60", 
+                    "50,25,25", 
+                    "25,50,25", 
+                    "25,25,50", 
+                    "80,10,10", 
+                    "10,80,10", 
+                    "10,10,80", 
+                    "40,30,30", 
+                    "30,40,30", 
+                    "30,30,40", 
+                    "40,20,20", 
+                    "20,40,20", 
+                    "20,20,40", 
+                    "40,25,25", 
+                    "25,40,25", 
+                    "25,25,40", 
+                    "20,20,20", 
+                    "30,30,30"
+                ]
+            }, 
+            "script": "run-fio.py"
+        }
+    ], 
+    "group_names": [
+        "ungrouped"
+    ], 
+    "groups": {
+        "all": [
+            "issdm-16"
+        ], 
+        "ungrouped": [
+            "issdm-16"
+        ]
+    }, 
+    "inventory_dir": "/experiment", 
+    "inventory_file": "./machines", 
+    "inventory_hostname": "issdm-16", 
+    "inventory_hostname_short": "issdm-16", 
+    "maxbw": "26194,15397,299,241", 
+    "module_setup": true, 
+    "omit": "__omit_place_holder__81e80ee1a784dcbbde193cf9d82989f705861a5f", 
+    "output_folder": "/results/with_limits/repetition/3//blksize_kb/4096/limits_pct/30,30,30", 
+    "parameter_list": [
+        [
+            4, 
+            256, 
+            4096
+        ], 
+        [
+            "60,20,20", 
+            "20,60,20", 
+            "20,20,60", 
+            "50,25,25", 
+            "25,50,25", 
+            "25,25,50", 
+            "80,10,10", 
+            "10,80,10", 
+            "10,10,80", 
+            "40,30,30", 
+            "30,40,30", 
+            "30,30,40", 
+            "40,20,20", 
+            "20,40,20", 
+            "20,20,40", 
+            "40,25,25", 
+            "25,40,25", 
+            "25,25,40", 
+            "20,20,20", 
+            "30,30,30"
+        ]
+    ], 
+    "parameter_names": [
+        "blksize_kb", 
+        "limits_pct"
+    ], 
+    "params": {
+        "blksize_kb": 4096, 
+        "limits_pct": "30,30,30"
+    }, 
+    "playbook_dir": "/experiment", 
+    "results_path": "/results/with_limits/repetition/3/"
+}

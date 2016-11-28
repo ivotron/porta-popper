@@ -1,19 +1,17 @@
 ---
-parameters:
-  mode:
-  - read
-  - write
-  - randread
-  - randwrite
-
 benchmarks:
 - name: fio
   image: ivotron/fio
-  entrypoint: genfio-test
   volumes:
   - /tmp/results:/results
-  args: '-s -b 4k -d /dev/sdb -r 60 -m {{ params.mode }}'
-  get:
+  args: 'genfio-test -s -b 4k -d /dev/sdb -r 60 -m $mode'
+  fetch:
   - /tmp/results
   devices:
   - /dev/sdb:/dev/sdb
+  parameters:
+    mode:
+    - read
+    - write
+    - randread
+    - randwrite
