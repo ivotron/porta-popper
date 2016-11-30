@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import csv
+import sys
+
+fname = sys.argv[1]
+
+lowest = sys.maxint
+with open(fname) as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+
+        if row['read_bw'] == 0 and row['write_bw'] == 0:
+            raise Exception("Both read and write bandwidth are zero")
+        if row['read_bw'] != 0 and row['write_bw'] != 0:
+            raise Exception("Both read and write bandwidth are not zero")
+
+        bw = row['read_bw']
+        if bw == 0:
+            bw = row['write_bw']
+
+        if bw < lowest:
+            lowest = bw
+
+print(lowest)
