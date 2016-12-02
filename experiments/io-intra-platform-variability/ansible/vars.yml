@@ -1,17 +1,14 @@
 ---
+num_repetitions: 5
+device: /dev/sdb
 benchmarks:
 - name: fio
   image: ivotron/fio
+  entrypoint: genfio-test
+  args: '-s -m rw -d {{ device }} -b 4k -r 30'
   volumes:
   - /tmp/results:/results
-  args: 'genfio-test -s -b 4k -d /dev/sdb -r 60 -m $mode'
   fetch:
   - /tmp/results
   devices:
-  - /dev/sdb:/dev/sdb
-  parameters:
-    mode:
-    - read
-    - write
-    - randread
-    - randwrite
+  - '{{ device }}:{{ device }}'

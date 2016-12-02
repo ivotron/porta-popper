@@ -1,0 +1,4 @@
+device: /tony/sdb
+defaults:
+  limits:
+    device-read-iops: '{{ device }}:3000'
