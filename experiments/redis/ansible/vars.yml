@@ -1,12 +1,20 @@
 ---
 results_path: /results/
-remote_results_path: "/tmp/results/{{ lookup('pipe', 'date +%s') }}"
+remote_results_path: "/tmp/results/"
+cpu_quota:
+  dwill.soe.ucsc.edu: '55859'
+  pl2: '31298'
+  rackform2: '44921'
+  scruffy.soe.ucsc.edu: '42480'
 
 benchmarks:
 - name: stressng-stream
   image: ivotron/stress-ng:v0.07.09
   entrypoint: /bin/bash
   command: "-c 'stress-ng --stream 1 --timeout 30 2> /results/stdoutout'"
+  limits:
+    cpu-quota: '{{ cpu_quota[inventory_hostname] }}'
+    cpuset-cpus: '3'
   volumes:
   - '{{ remote_results_path }}:/results'
   fetch:
@@ -19,6 +27,8 @@ benchmarks:
       redis:
         image: redis:3.2
         network_mode: host
+        cpu_quota: '{{ cpu_quota[inventory_hostname] }}'
+        cpuset: '3'
       redisbench:
         image: redis:3.2
         entrypoint: /bin/bash

@@ -1,0 +1,5 @@
+dwill.soe.ucsc.edu ansible_user=ivo
+rackform2 ansible_user=issdm
+pl2 ansible_user=issdm
+#issdm-0 ansible_user=issdm
+scruffy.soe.ucsc.edu ansible_user=issdm

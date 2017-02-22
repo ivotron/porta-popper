@@ -1,14 +1,101 @@
 ---
-num_repetitions: 5
 device: /dev/sdb
+net_interface: eth1
+
+results_path: /results/output
+remote_results_path: "/tmp/results/{{ lookup('pipe', 'date +%s') }}"
+
 benchmarks:
-- name: fio
-  image: ivotron/fio
+- name: 'conceptual-{{ net_interface }}'
+  image: ivotron/conceptual:v1.5.1
+  args: 'latency-all'
+  env:
+    SSHD_PORT: 2222
+    ADD_INSECURE_KEY: true
+    WAIT_SSHD_SECS: 5
+    MPIRUN_FLAGS: '-npernode 1
+                   -mca btl_tcp_if_include {{ net_interface }}
+                   -mca oob_tcp_if_include {{ net_interface }}
+                   -mca btl self,tcp'
+  network_mode: host
+  ipc: host
+  env_host:
+    issdm-38:
+      RANK0: 1
+  put:
+  - src: ./mpihosts
+    dest: /tmp/mpihosts
+  volumes:
+  - /tmp/mpihosts:/tmp/mpihosts
+  - '{{ remote_results_path }}:/results'
+  fetch:
+  - '{{ remote_results_path }}'
+
+
+- name: 'fio-rw{{ device | replace("/", "-") }}'
+  image: ivotron/fio:2.10
   entrypoint: genfio-test
   args: '-s -m rw -d {{ device }} -b 4k -r 30'
-  volumes:
-  - /tmp/results:/results
-  fetch:
-  - /tmp/results
   devices:
   - '{{ device }}:{{ device }}'
+  volumes:
+  - '{{ remote_results_path }}:/results'
+  fetch:
+  - '{{ remote_results_path }}'
+
+
+- name: stressng-cpu
+  image: ivotron/stress-ng:v0.07.09
+  entrypoint: /bin/bash
+  args: "-c 'stress-ng
+               --sequential $tasks
+               --class cpu
+               --exclude context,cpu-online,getrandom,mergesort,heapsort,numa,str,stream,wcs,zlib
+               --timeout 15
+               --metrics-brief
+               --times
+               --yaml /results/out.yml'"
+  parameters:
+    tasks: [1, 4]
+  volumes:
+  - '{{ remote_results_path }}:/results'
+  fetch:
+  - '{{ remote_results_path }}'
+
+
+- name: stressng-mem
+  image: ivotron/stress-ng:v0.07.09
+  entrypoint: /bin/bash
+  args: "-c 'stress-ng
+               --sequential $tasks
+               --class memory
+               --exclude bsearch,heapsort,lockbus,membarrier,mergesort,mincore,numa,qsort,resources,stack,tsearch,wcs,zlib
+               --timeout 15
+               --metrics-brief
+               --times
+               --yaml /results/out.yml'"
+  parameters:
+    tasks: [1, 4]
+  volumes:
+  - '{{ remote_results_path }}:/results'
+  fetch:
+  - '{{ remote_results_path }}'
+
+
+- name: stressng-cpucache
+  image: ivotron/stress-ng:v0.07.09
+  entrypoint: /bin/bash
+  args: "-c 'stress-ng
+               --sequential $tasks
+               --class cpu-cache
+               --exclude bsearch,heapsort,hsearch,lockbus,lsearch,malloc,matrix,membarrier,memcpy,mergesort,qsort,str,stream,tsearch,vecmath,wcs,zlib
+               --timeout 15
+               --metrics-brief
+               --times
+               --yaml /results/out.yml'"
+  parameters:
+    tasks: [1, 4]
+  volumes:
+  - '{{ remote_results_path }}:/results'
+  fetch:
+  - '{{ remote_results_path }}'
