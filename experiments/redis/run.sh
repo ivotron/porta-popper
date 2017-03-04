@@ -2,12 +2,12 @@
 set -e -x
 
 # delete previous results
-sudo rm -f results/runtime_*
+rm -fr results/benchoutput/*
 
 docker run --rm -ti \
   -v `pwd`/ansible:/experiment \
   -v `pwd`/../../.vendor:/experiment/vendor \
-  -v `pwd`/results:/results \
+  -v `pwd`/results/benchoutput:/results \
   -v $SSH_AUTH_SOCK:/ssh-agent \
   -e SSH_AUTH_SOCK=/ssh-agent \
   --workdir=/experiment \
@@ -16,5 +16,4 @@ docker run --rm -ti \
   ivotron/ansible:2.2.0.0 -c \
     "ansible-playbook -e @vars.yml playbook.yml"
 
-sudo rm -fr results/benchoutput/*
-sudo mv results/benchmark results/benchoutput/
+mv results/benchoutput/facts results/facts
