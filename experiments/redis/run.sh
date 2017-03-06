@@ -4,7 +4,7 @@ set -e -x
 # delete previous results
 rm -fr results/benchoutput/*
 
-docker run --rm -ti \
+docker run --rm \
   -v `pwd`/ansible:/experiment \
   -v `pwd`/../../.vendor:/experiment/vendor \
   -v `pwd`/results/benchoutput:/results \
